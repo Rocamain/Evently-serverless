@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint . --ext .js",
-    "lint:fix": "eslint . --fix --ext .js"
+    "lint:fix": "eslint . --fix --ext .js",
+    "style:all": "npm run style:lint && npm run style:prettier",
+    "style:lint": "eslint '**/*.js'",
+    "style:prettier": "prettier --check '**/*.js'",
+    "pretty:fix": "prettier --write '**/*.js'"
   },
   "keywords": [],
   "author": "",
