@@ -14,4 +14,4 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm ci
-      - run: npm style:all
+      - run: npm run style:all
