@@ -3,6 +3,7 @@ const {
   DynamoDBDocument,
   GetCommand,
   PutCommand,
+  QueryCommand,
 } = require('@aws-sdk/lib-dynamodb')
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
 const https = require('https')
@@ -54,28 +55,18 @@ module.exports = class DynamoDbAdapter {
   }
 
   async createItem(tableName, entity) {
-    console.log(
-      `Saving new item id="${entity.id}" into DynamoDB table ${tableName}`,
-    )
+    console.log(`Saving new item into DynamoDB table ${tableName}`)
+
     const params = {
-      Item: entity.toItem(),
+      Item: entity,
       ReturnConsumedCapacity: 'TOTAL',
       TableName: tableName,
-      Expected: {
-        pk: {
-          Exists: false,
-        },
-      },
+      ConditionExpression: 'attribute_not_exists(PK)',
     }
 
-    try {
-      await this.create(params)
-      console.log('Item saved successfully')
-      return entity
-    } catch (error) {
-      console.log('Error', error)
-      throw error
-    }
+    await this.create(params)
+    console.log('Item saved successfully', entity)
+    return entity
   }
 
   async create(params) {
@@ -87,31 +78,73 @@ module.exports = class DynamoDbAdapter {
   }
 
   async getItem(tableName, id) {
-    console.log(`get item id=${id} from DynamoDB table: ${tableName}`)
+    console.log(`Getting item id=${id} from DynamoDB table: ${tableName}`)
     const params = {
       TableName: tableName,
       Key: { PK: id },
-      ConsistentRead: true,
+      // ConsistentRead: true,
     }
     if (!id || id.trim() === '') {
       const error = new Error()
       error.msg = 'Id required'
       error.statusCode = 400
-      console.log('Error', error)
-      throw error
+
+      throw JSON.parse(error)
     }
-    try {
-      const entity = await this.get(params)
-      console.log('Item retrieved successfully')
-      return entity
-    } catch (error) {
-      console.log('Error', error)
-      throw error
-    }
+
+    const entity = await this.get(params)
+    console.log('Item retrieved successfully')
+    return entity
   }
 
   async get(params) {
     const command = new GetCommand({
+      ...params,
+    })
+    return this.documentClient.send(command)
+  }
+
+  async queryIndexByField(
+    tableName,
+    { indexName, field, value, limit, pastBookings = false },
+  ) {
+    console.log(
+      `Getting items from DynamoDB table: ${tableName} by with ${field}=${value} `,
+    )
+
+    const ONE_HOUR = 1
+    const expression = pastBookings
+      ? '#field = :value'
+      : '#field = :value AND #field2 >= :value2'
+
+    const expressionAttributeNames = pastBookings
+      ? {
+          '#field': field,
+        }
+      : {
+          '#field': field,
+          '#field2': 'eventDateAndTime',
+        }
+
+    const expressionAttributeValues = pastBookings
+      ? {
+          ':value': value,
+        }
+      : {
+          ':value': value,
+          ':value2': new Date(new Date().getTime() + ONE_HOUR).toISOString(),
+        }
+
+    const params = {
+      TableName: tableName,
+      IndexName: indexName,
+      KeyConditionExpression: expression,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: expressionAttributeValues,
+      ScanIndexForward: true,
+      Limit: limit,
+    }
+    const command = new QueryCommand({
       ...params,
     })
     return this.documentClient.send(command)
