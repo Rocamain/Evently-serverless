@@ -73,7 +73,46 @@ functions:
         Action:
           - 'DynamoDB:GetItem'
         Resource: !GetAtt eventlyTable.Arn
-    
+  getItemsByOwner:
+      name: get-items-by-owner
+      handler: src/lambdas/getItemsById/function.handler
+      description: Get Items from repository by eventOwner.
+      memorySize: 128
+      timeout: 5
+      environment:
+        tableName: ${self:custom.tableName}
+        indexName: eventOwnerId
+        field: eventOwnerId
+      events:
+        - http:
+            path: item/byOwner/{id}
+            method: GET
+      iamRoleStatements:
+        - Effect: 'Allow'
+          Action:
+            - 'DynamoDB:GetItem'
+          Resource: !GetAtt eventlyTable.Arn
+  getItemsByUser:
+      name: get-items-by-owner
+      handler: src/lambdas/getItemsById/function.handler
+      description: Get Items from repository by eventOwner.
+      memorySize: 128
+      timeout: 5
+      environment:
+        tableName: ${self:custom.tableName}
+        indexName: userId
+        field: userId
+      events:
+        - http:
+            path: item/byUser/{id}
+            method: GET
+      iamRoleStatements:
+        - Effect: 'Allow'
+          Action:
+            - 'DynamoDB:GetItem'
+          Resource: !GetAtt eventlyTable.Arn
+      
+
 
 package:
   patterns:
@@ -84,6 +123,8 @@ package:
     - '.dynamodb/**'
     - '.github/**'
     - '!__tests__/**'
+
+
 
 resources:
   Description: ${self:custom.description}    
@@ -96,9 +137,16 @@ resources:
         AttributeDefinitions:
           - AttributeName: PK
             AttributeType: S
+          - AttributeName: eventOwnerId
+            AttributeType: S  
+          - AttributeName: userId
+            AttributeType: S  
+          - AttributeName: eventDateAndTime
+            AttributeType: S    
         KeySchema:
           - AttributeName: PK
             KeyType: HASH
+         
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:custom.tableName}
         Tags:
@@ -108,4 +156,22 @@ resources:
             Value: ${self:provider.stage}
           - Key: StackName
             Value: !Ref AWS::StackId
+
+        GlobalSecondaryIndexes:
+          - IndexName: eventOwnerId
+            KeySchema:
+              - AttributeName: eventOwnerId
+                KeyType: HASH
+              - AttributeName: eventDateAndTime
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: userId
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: eventDateAndTime
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
