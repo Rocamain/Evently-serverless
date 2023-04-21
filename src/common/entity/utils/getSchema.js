@@ -1,4 +1,3 @@
-
 const EVENT_PROPERTIES = [
   'type',
   'eventOwnerId',
@@ -18,6 +17,7 @@ const BOOKING_PROPERTIES = [
   'userEmail',
   'eventId',
 ]
+
 const EVENT_SCHEMA = {
   type: 'object',
   properties: {
