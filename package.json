@@ -10,7 +10,8 @@
     "style:lint": "eslint '**/*.js'",
     "style:prettier": "prettier --check '**/*.js'",
     "pretty:fix": "prettier --write '**/*.js'",
-    "offline": "sls offline start"
+    "offline": "sls offline start",
+    "prepare": "husky install"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +27,7 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
+    "husky": "^8.0.3",
     "prettier": "^2.8.7",
     "serverless": "^3.30.1",
     "serverless-iam-roles-per-function": "^3.2.0",
