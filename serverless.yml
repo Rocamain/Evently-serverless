@@ -18,7 +18,7 @@ provider:
     
 custom:
   tableName: ${self:service}-${self:provider.stage}
-  description: Envently. The apps for events
+  description: Evently. The apps for events
   default_stage: local
   
   serverless-offline:
@@ -120,10 +120,12 @@ package:
   patterns:
     # include
     - src/**
+    - "*"
     # exclude
     - '!*'
     - '.dynamodb/**'
     - '.github/**'
+    - '.husky/**'
     - '!__tests__/**'
 
 resources:
