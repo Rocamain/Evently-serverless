@@ -9,7 +9,7 @@ plugins:
 provider:
   name: aws
   region: eu-west-2
-  stage: local
+  stage: ${opt:stage, self:custom.default_stage}
   runtime: nodejs18.x
   environment:
     REGION: ${self:provider.region}
@@ -35,9 +35,9 @@ custom:
       migrate: true
       convertEmptyValues: true
 
-    
 functions:
   createItem:
+    name: ${self:service}-${self:provider.stage}-create-item
     handler: src/lambdas/createItem/function.handler
     description: Create Item in repository
     memorySize: 128
@@ -55,9 +55,9 @@ functions:
           - dynamodb:PutItem
           - dynamodb:UpdateItem
         Resource: 
-          - !GetAtt Table.Arn
+          - !GetAtt eventlyTable.Arn
   getItem:
-    name: 'event-get'
+    name: ${self:service}-${self:provider.stage}-get-item-by-id
     handler: src/lambdas/getItem/function.handler
     description: Get an Item from repository.
     memorySize: 128
@@ -72,9 +72,10 @@ functions:
       - Effect: 'Allow'
         Action:
           - 'DynamoDB:GetItem'
-        Resource: !GetAtt eventlyTable.Arn
+        Resource: 
+          - !GetAtt eventlyTable.Arn
   getItemsByOwner:
-      name: get-items-by-owner
+      name: ${self:service}-${self:provider.stage}-get-items-by-owner
       handler: src/lambdas/getItemsById/function.handler
       description: Get Items from repository by eventOwner.
       memorySize: 128
@@ -91,9 +92,10 @@ functions:
         - Effect: 'Allow'
           Action:
             - 'DynamoDB:GetItem'
-          Resource: !GetAtt eventlyTable.Arn
+          Resource: 
+            - !GetAtt eventlyTable.Arn
   getItemsByUser:
-      name: get-items-by-owner
+      name: ${self:service}-${self:provider.stage}-get-items-by-user
       handler: src/lambdas/getItemsById/function.handler
       description: Get Items from repository by eventOwner.
       memorySize: 128
@@ -110,10 +112,9 @@ functions:
         - Effect: 'Allow'
           Action:
             - 'DynamoDB:GetItem'
-          Resource: !GetAtt eventlyTable.Arn
+          Resource: 
+            - !GetAtt eventlyTable.Arn
       
-
-
 package:
   patterns:
     # include
@@ -124,16 +125,14 @@ package:
     - '.github/**'
     - '!__tests__/**'
 
-
-
 resources:
   Description: ${self:custom.description}    
 
   Resources:
-
-    Table:
+    eventlyTable:
       Type: AWS::DynamoDB::Table
       Properties:
+        TableName: ${self:custom.tableName}
         AttributeDefinitions:
           - AttributeName: PK
             AttributeType: S
@@ -148,7 +147,7 @@ resources:
             KeyType: HASH
          
         BillingMode: PAY_PER_REQUEST
-        TableName: ${self:custom.tableName}
+        
         Tags:
           - Key: Application
             Value: ${self:service}
