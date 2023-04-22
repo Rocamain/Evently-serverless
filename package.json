@@ -11,7 +11,8 @@
     "style:prettier": "prettier --check '**/*.js'",
     "pretty:fix": "prettier --write '**/*.js'",
     "offline": "sls offline start",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "deploy:prod": "sls deploy -s prod"
   },
   "keywords": [],
   "author": "",
