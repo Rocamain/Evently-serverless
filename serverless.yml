@@ -55,8 +55,7 @@ functions:
         Action:
           - dynamodb:PutItem
           - dynamodb:UpdateItem
-        Resource: 
-          - !GetAtt eventlyTable.Arn
+        Resource: !GetAtt eventlyTable.Arn
   getItem:
     name: ${self:service}-${self:provider.stage}-get-item-by-id
     handler: src/lambdas/getItem/function.handler
@@ -73,8 +72,7 @@ functions:
       - Effect: 'Allow'
         Action:
           - 'DynamoDB:GetItem'
-        Resource: 
-          - !GetAtt eventlyTable.Arn
+        Resource: !GetAtt eventlyTable.Arn
   getItemsByOwner:
       name: ${self:service}-${self:provider.stage}-get-items-by-owner
       handler: src/lambdas/getItemsById/function.handler
@@ -93,8 +91,7 @@ functions:
         - Effect: 'Allow'
           Action:
             - 'DynamoDB:GetItem'
-          Resource: 
-            - !GetAtt eventlyTable.Arn
+          Resource: !GetAtt eventlyTable.Arn
   getItemsByUser:
       name: ${self:service}-${self:provider.stage}-get-items-by-user
       handler: src/lambdas/getItemsById/function.handler
@@ -113,21 +110,20 @@ functions:
         - Effect: 'Allow'
           Action:
             - 'DynamoDB:GetItem'
-          Resource: 
-            - !GetAtt eventlyTable.Arn
+          Resource: !GetAtt eventlyTable.Arn
       
 package:
   individually: true
-  patterns:
-    # include
-    - src/**
-    - "*"
-    # exclude
-    # - '!*'
-    - '.dynamodb/**'
-    # - '.github/**'
-    - '.husky/**'
-    - '!__tests__/**'
+  # patterns:
+  #   # include
+  #   - src/**
+  #   - "*"
+  #   # exclude
+  #   # - '!*'
+  #   - '.dynamodb/**'
+  #   # - '.github/**'
+  #   - '.husky/**'
+  #   - '!__tests__/**'
 
 resources:
   Description: ${self:custom.description}    
