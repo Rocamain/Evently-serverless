@@ -117,14 +117,15 @@ functions:
             - !GetAtt eventlyTable.Arn
       
 package:
+  individually: true
   patterns:
     # include
     - src/**
     - "*"
     # exclude
-    - '!*'
+    # - '!*'
     - '.dynamodb/**'
-    - '.github/**'
+    # - '.github/**'
     - '.husky/**'
     - '!__tests__/**'
 
