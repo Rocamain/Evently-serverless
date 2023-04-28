@@ -11,7 +11,10 @@
     "style:prettier": "prettier --check '**/*.js'",
     "pretty:fix": "prettier --write '**/*.js'",
     "offline": "sls offline start",
-    "deploy:prod": "sls deploy -s prod"
+    "deploy:prod": "sls deploy -s prod",
+    "export-env-local": "sls export-env --all",
+    "integration:test": "npm run export-env-local && jest",
+    "test": "jest"
   },
   "keywords": [],
   "author": "Francisco Javier Roca",
@@ -32,6 +35,7 @@
     "jest-dynalite": "^3.6.1",
     "prettier": "^2.8.7",
     "serverless": "^3.30.1",
+    "serverless-export-env": "^2.2.0",
     "serverless-iam-roles-per-function": "^3.2.0",
     "serverless-offline": "^12.0.4"
   },
