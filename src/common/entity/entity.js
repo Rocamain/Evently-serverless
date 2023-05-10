@@ -15,6 +15,7 @@ const EVENT_PROPERTIES = [
   'eventDateAndTime',
   'eventPrice',
   'eventLink',
+  'userId',
 ]
 
 const BOOKING_PROPERTIES = [
@@ -52,7 +53,6 @@ module.exports = class Entity {
     userName,
     userEmail,
   }) {
-    console.log(eventDateAndTime)
     this.createdAt =
       createdAt instanceof Date
         ? createdAt.toISOString()
@@ -73,22 +73,29 @@ module.exports = class Entity {
         : eventDateAndTime
     this.eventLink = stingFormatter(eventLink)
     this.eventPrice = eventPrice
-
-    this.userId = userId
+    this.userId = userId || type
     this.userName = userName
     this.userEmail = stingFormatter(userEmail)
   }
 
   static fromItem(item) {
-    const { PK } = item
-    item.id = PK
+    item.id = item?.PK
     delete item.PK
 
     const entity = new Entity({ ...item })
     const entitySanitized = entity.sanitizeItem()
     if (entitySanitized) {
       const { PK, ...restEntity } = entitySanitized
-      return { [`${entitySanitized.type}Id`]: PK, ...restEntity }
+      const id = PK + '-' + entitySanitized.userId
+
+      if (item.type === 'event') {
+        delete entitySanitized.userId
+      }
+
+      return {
+        [`${entitySanitized.type}Id`]: id,
+        ...restEntity,
+      }
     }
   }
 
@@ -114,7 +121,7 @@ module.exports = class Entity {
         const sanitizeEventItem = {}
         BOOKING_PROPERTIES.forEach((property) => {
           property === 'id'
-            ? (sanitizeEventItem.PK = this.eventId + '-' + this.userEmail)
+            ? (sanitizeEventItem.PK = this.eventId)
             : (sanitizeEventItem[property] = this[property])
         })
         return sanitizeEventItem

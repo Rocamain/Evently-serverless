@@ -5,6 +5,7 @@ plugins:
   - serverless-iam-roles-per-function
   - '@khasty720/serverless-dynamodb-local'
   - serverless-offline
+  - serverless-export-env
 
 provider:
   name: aws
@@ -15,6 +16,7 @@ provider:
     REGION: ${self:provider.region}
     STAGE: ${self:provider.stage}
     SERVICE: ${self:service}
+    
     
 custom:
   tableName: ${self:service}-${self:provider.stage}
@@ -32,7 +34,8 @@ custom:
       - local
     start:
       port: 8000
-      inMemory: true
+      heapInitial: 200m
+      heapMax: 1g
       migrate: true
       convertEmptyValues: true
 
@@ -66,7 +69,7 @@ functions:
       tableName: ${self:custom.tableName}
     events:
       - http:
-          path: item/{id}
+          path: item/{id}/{sort}
           method: GET
     iamRoleStatements:
       - Effect: 'Allow'
@@ -93,7 +96,7 @@ functions:
             - 'DynamoDB:GetItem'
           Resource: !GetAtt eventlyTable.Arn
   getItemsByUser:
-      name: ${self:service}-${self:provider.stage}-get-items-by-user
+      name: ${self:service}-${self:provider.stage}-get-items-by-event-owner
       handler: src/lambdas/getItemsById/function.handler
       description: Get Items from repository by eventOwner.
       memorySize: 128
@@ -111,19 +114,34 @@ functions:
           Action:
             - 'DynamoDB:GetItem'
           Resource: !GetAtt eventlyTable.Arn
-      
+  DeleteItem:
+      name: ${self:service}-${self:provider.stage}-delete-item
+      handler: src/lambdas/deleteItem/function.handler
+      description: Delete Item from repository.
+      memorySize: 128
+      timeout: 5
+      environment:
+        tableName: ${self:custom.tableName}
+      events:
+        - http:
+            path: item/{id}
+            method: DELETE
+      iamRoleStatements:
+        - Effect: 'Allow'
+          Action:
+            - 'DynamoDB:DeleteItem'
+          Resource: !GetAtt eventlyTable.Arn    
 package:
   individually: true
-  # patterns:
-  #   # include
-  #   - src/**
-  #   - "*"
-  #   # exclude
-  #   # - '!*'
-  #   - '.dynamodb/**'
-  #   # - '.github/**'
-  #   - '.husky/**'
-  #   - '!__tests__/**'
+  patterns:
+    # include
+    - src/**
+    
+    # exclude
+    - '!*'
+    - '.dynamodb/**'
+    - '.husky/**'
+    - '!__tests__/**'
 
 resources:
   Description: ${self:custom.description}    
@@ -145,6 +163,8 @@ resources:
         KeySchema:
           - AttributeName: PK
             KeyType: HASH
+          - AttributeName: userId
+            KeyType: RANGE  
          
         BillingMode: PAY_PER_REQUEST
         

@@ -1,0 +1,33 @@
+Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: eventOwnerId
+            AttributeType: S  
+          - AttributeName: userId
+            AttributeType: S  
+          - AttributeName: eventDateAndTime
+            AttributeType: S    
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: eventOwnerId
+            KeySchema:
+              - AttributeName: eventOwnerId
+                KeyType: HASH
+              - AttributeName: eventDateAndTime
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: userId
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: eventDateAndTime
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
