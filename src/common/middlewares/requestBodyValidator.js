@@ -10,7 +10,6 @@ const DateREgex =
 ajv.addFormat('HH:MM', TimeRegex)
 ajv.addFormat('DD-MM-YYYY', DateREgex)
 ajv.addFormat('price', {
-  type: 'number',
   validate: (price) => Number(price) >= 0,
 })
 

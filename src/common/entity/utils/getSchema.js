@@ -30,7 +30,7 @@ const EVENT_SCHEMA = {
     eventLocation: { type: 'string' },
     eventDate: { type: 'string', format: 'DD-MM-YYYY' },
     eventTime: { type: 'string', format: 'HH:MM' },
-    eventPrice: { format: 'price' },
+    eventPrice: { type: 'number', format: 'price' },
     eventLink: { type: 'string', format: 'uri' },
   },
   required: EVENT_PROPERTIES,

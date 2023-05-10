@@ -10,14 +10,12 @@ module.exports = class EntityService {
   }
 
   async create(requestBody) {
-    console.log(
-      `Creating entity item in repository on table ${process.env.tableName}`,
-    )
-
     if (requestBody.type === 'booking') {
-      const eventInfo = await this.get(requestBody.eventId)
-      const parsedEventInfo = JSON.parse(eventInfo)
-      console.log({ EVENT: parsedEventInfo })
+      console.log('Checking if event exists')
+      const eventInfo = await this.get(requestBody.eventId, 'event')
+      console.log('is booking, this is event result', eventInfo)
+      const parsedEventInfo = eventInfo
+
       if (Object.keys(parsedEventInfo.data).length) {
         const {
           eventLocation,
@@ -39,6 +37,9 @@ module.exports = class EntityService {
         throw error
       }
     }
+    console.log(
+      `Creating entity item in repository on table ${process.env.tableName}`,
+    )
     const entityService = new Entity(requestBody).toItem()
 
     await this.dynamoDbAdapter.createItem(this.tableName, entityService)
@@ -46,24 +47,21 @@ module.exports = class EntityService {
     return { data: Entity.fromItem(entityService) }
   }
 
-  async get(id) {
-    const response = await this.dynamoDbAdapter.getItem(this.tableName, id)
+  async get(id, userId) {
     console.log(
       `Retrieving Entity item id ${id} from repository entityService from table ${process.env.tableName}`,
     )
-    const item = response.Item
+    const entityItem = await this.dynamoDbAdapter.getItem(this.tableName, {
+      id,
+      userId,
+    })
 
-    if (item) {
-      console.log('Item found', item)
-      return JSON.stringify({ data: Entity.fromItem(item) })
-    }
-    console.log('Item not found')
-    return JSON.stringify({ data: {} })
+    return { data: entityItem ? Entity.fromItem(entityItem) : {} }
   }
 
   async queryByGlobalIndex(id, pastBookings) {
     console.log(
-      `Retrieving Entities from repository entityService on global index ${process.env.indexName} from table ${process.env.tableName}`,
+      `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,
     )
     const response = await this.dynamoDbAdapter.queryIndexByField(
       this.tableName,
@@ -87,6 +85,41 @@ module.exports = class EntityService {
     } else {
       console.log('Items not found')
       return JSON.stringify({ data: [] })
+    }
+  }
+
+  async delete(id, userId) {
+    if (userId === 'event') {
+      console.log('IS EVENT')
+      const { Items, Count } = await this.dynamoDbAdapter.queryByField(
+        this.tableName,
+        {
+          field: 'PK',
+          value: id,
+        },
+      )
+
+      console.log(
+        `Deleting Entities items  with id ${id} from repository entityService from table ${process.env.tableName}`,
+      )
+      await this.dynamoDbAdapter.deleteItems(this.tableName, {
+        id,
+        userId,
+        items: Items,
+        count: Count,
+      })
+
+      return { data: { message: 'Items deleted' } }
+    } else {
+      console.log(
+        `Deleting Entity item id ${id} from repository entityService from table ${process.env.tableName}`,
+      )
+      await this.dynamoDbAdapter.deleteItem(this.tableName, {
+        id,
+        userId,
+      })
+
+      return { data: { message: 'Item deleted' } }
     }
   }
 }
