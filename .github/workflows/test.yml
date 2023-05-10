@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - staging
+      - main
 jobs:
   test:
     name: Test before deploy to dev
@@ -22,3 +23,6 @@ jobs:
           npm ci
           npm i -g serverless
           npm test
+        env:
+          tableName: ${{ secrets.tableName }}
+          
