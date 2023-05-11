@@ -41,6 +41,7 @@ describe('Integration Test for on Adapter ', () => {
     expect(deleteResults.ConsumedCapacity.CapacityUnits).toBe(1)
     expect(check.Count).toBe(0)
   })
+
   test('create, get, delete an item and query', async () => {
     const paramsCreate = {
       Item: {
@@ -141,5 +142,66 @@ describe('Integration Test for on Adapter ', () => {
     expect(deleteBatchSameID.ConsumedCapacity[0].CapacityUnits).toBe(2)
     expect(deleteBatchSameID.UnprocessedItems).toEqual({})
     expect(check.Count).toBe(0)
+  })
+
+  test('create one item and queryIndexByField userId and ownerId, check, delete and check', async () => {
+    const paramsCreateSameID1 = {
+      Item: {
+        PK: 'SampleId',
+        userId: 'SampleUserId',
+        eventOwnerId: 'sampleOwnerId-1',
+        eventDateAndTime: new Date().toISOString(),
+      },
+      ReturnConsumedCapacity: 'TOTAL',
+      TableName: process.env.tableName,
+    }
+
+    const createResultsSameID1 = await client.create(paramsCreateSameID1)
+
+    const queryByGlobalIndexOwnerId = {
+      indexName: 'eventOwnerId',
+      field: 'eventOwnerId',
+      value: paramsCreateSameID1.Item.eventOwnerId,
+      pastBookings: true,
+    }
+    const queryByGlobalIndexUserId = {
+      indexName: 'userId',
+      field: 'userId',
+      value: paramsCreateSameID1.Item.userId,
+      pastBookings: true,
+    }
+
+    const queryByEventOwnerId = await client.queryIndexByField(
+      process.env.tableName,
+      queryByGlobalIndexOwnerId,
+    )
+    const queryByEventUserId = await client.queryIndexByField(
+      process.env.tableName,
+      queryByGlobalIndexUserId,
+    )
+
+    const check = await client.getItem(process.env.tableName, {
+      id: 'SampleId',
+      userId: 'SampleUserId',
+    })
+
+    await client.deleteItem(process.env.tableName, {
+      id: 'SampleId',
+      userId: 'SampleUserId',
+    })
+
+    const checkDelete = await client.getItem(process.env.tableName, {
+      id: 'SampleId',
+      userId: 'SampleUserId',
+    })
+
+    expect(createResultsSameID1).toBeTruthy()
+    expect(createResultsSameID1.ConsumedCapacity.TableName).toMatch(
+      process.env.tableName,
+    )
+
+    expect(queryByEventOwnerId.Items[0]).toEqual(check)
+    expect(queryByEventUserId.Items[0]).toEqual(check)
+    expect(checkDelete).toBe(undefined)
   })
 })
