@@ -58,7 +58,6 @@ module.exports = class DynamoDbAdapter {
 
   async createItem(tableName, entity) {
     console.log(`Saving new item into DynamoDB table ${tableName}`)
-    console.log('Entty', entity)
 
     const params = {
       Item: entity,
@@ -174,7 +173,7 @@ module.exports = class DynamoDbAdapter {
     const command = new DeleteCommand({
       ...params,
     })
-    console.log(command)
+
     const response = await this.documentClient.send(command)
 
     return response

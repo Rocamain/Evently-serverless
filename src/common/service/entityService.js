@@ -1,19 +1,19 @@
 const DynamoDbAdapter = require('../adapter/dynamoDbAdapter')
 const Entity = require('../entity/entity')
-
+const { tableName, indexName, field } = process.env
 module.exports = class EntityService {
   constructor(dynamoDbAdapter) {
     this.dynamoDbAdapter = dynamoDbAdapter || new DynamoDbAdapter()
-    this.tableName = process.env.tableName
-    this.indexName = process.env.indexName
-    this.field = process.env.field
+    this.tableName = tableName
+    this.indexName = indexName
+    this.field = field
   }
 
   async create(requestBody) {
     if (requestBody.type === 'booking') {
       console.log('Checking if event exists')
       const eventInfo = await this.get(requestBody.eventId, 'event')
-      console.log('is booking, this is event result', eventInfo)
+
       const parsedEventInfo = eventInfo
 
       if (Object.keys(parsedEventInfo.data).length) {
@@ -63,6 +63,7 @@ module.exports = class EntityService {
     console.log(
       `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,
     )
+
     const response = await this.dynamoDbAdapter.queryIndexByField(
       this.tableName,
       {
@@ -77,6 +78,7 @@ module.exports = class EntityService {
 
     if (items.length) {
       console.log('Items found')
+
       const itemsEntities = items.map((item) => Entity.fromItem(item))
 
       return JSON.stringify({
@@ -84,13 +86,13 @@ module.exports = class EntityService {
       })
     } else {
       console.log('Items not found')
+
       return JSON.stringify({ data: [] })
     }
   }
 
   async delete(id, userId) {
     if (userId === 'event') {
-      console.log('IS EVENT')
       const { Items, Count } = await this.dynamoDbAdapter.queryByField(
         this.tableName,
         {
@@ -102,6 +104,7 @@ module.exports = class EntityService {
       console.log(
         `Deleting Entities items  with id ${id} from repository entityService from table ${process.env.tableName}`,
       )
+
       await this.dynamoDbAdapter.deleteItems(this.tableName, {
         id,
         userId,
@@ -109,7 +112,7 @@ module.exports = class EntityService {
         count: Count,
       })
 
-      return { data: { message: 'Items deleted' } }
+      return { message: 'Items deleted' }
     } else {
       console.log(
         `Deleting Entity item id ${id} from repository entityService from table ${process.env.tableName}`,

@@ -25,4 +25,6 @@ jobs:
           npm test
         env:
           tableName: ${{ secrets.tableName }}
+          indexName: ${{ secrets.indexName }}
+          field: ${{ secrets.field }}
           
