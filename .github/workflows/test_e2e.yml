@@ -1,18 +1,14 @@
 name: Serverless API Test
 
 on:
-  pull_request:
-    branches:
-      - test
-
   push:
     branches:
+      - test
       - staging
 
 jobs:
-  end_two_end-test:
+  start_serverless:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -23,23 +19,32 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: |
-          npm ci
-          npm i -g serverless
+        run: npm ci
 
       - name: Start serverless offline
-        run: sls offline start --host=localhost --port=3000 &
+        run: sls offline start --host=localhost --port=3000
+
+  run_tests:
+    needs: start_serverless
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Wait for serverless offline to start
         run: sleep 5
 
-
       - name: Run end to end test
-        run:  npm run e2e:test
-      - name: Capture serverless offline logs
-        run: |
-          echo "Serverless offline logs:"
-          ps aux | grep serverless
+        run: npm run e2e:test
 
       - name: Stop serverless offline
-        run: kill $(lsof -t -i:3000) || true
+        run: |
+          lsof -ti :3000 | xargs kill
