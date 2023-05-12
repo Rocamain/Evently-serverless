@@ -31,6 +31,7 @@ custom:
     lambdaPort: 3001
     allowCache: true
     noPrependStageInUrl: true
+    port: 3000 
 
   dynamodb:
     stages:
