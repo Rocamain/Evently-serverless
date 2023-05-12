@@ -3,7 +3,7 @@ name: Serverless API Test
 on:
   push:
     branches:
-      - main
+      - staging
 
 jobs:
   end_two_end-test:
@@ -24,10 +24,14 @@ jobs:
           npm i -g serverless
 
       - name: Start serverless offline
-        run: npm run offline start &
+        run: sls offline start --host=localhost --port=3000 &
 
       - name: Wait for serverless offline to start
         run: sleep 5
+      - name: Print serverless offline logs
+        run: |
+          echo "Serverless offline logs:"
+          cat nohup.out
 
       - name: Run end to end test
         run:  npm run e2e:test
