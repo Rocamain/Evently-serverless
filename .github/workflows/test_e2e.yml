@@ -3,7 +3,7 @@ name: Serverless API Test
 on:
   push:
     branches:
-      - main
+      - staging
 
 jobs:
   end_two_end-test:
