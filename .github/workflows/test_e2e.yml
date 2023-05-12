@@ -24,7 +24,7 @@ jobs:
           npm i -g serverless
 
       - name: Start serverless offline
-        run: npm run offline start &
+        run: sls offline start --host=localhost --port=3000 &
 
       - name: Wait for serverless offline to start
         run: sleep 5

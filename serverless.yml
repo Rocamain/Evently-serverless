@@ -16,6 +16,8 @@ provider:
     REGION: ${self:provider.region}
     STAGE: ${self:provider.stage}
     SERVICE: ${self:service}
+       # your variables - optional
+    httpApiGatewayEndpointId: !Ref HttpApi
     
     
 custom:
@@ -24,6 +26,7 @@ custom:
   default_stage: local
   
   serverless-offline:
+    host: 'localhost'
     httpPort: 3000
     lambdaPort: 3001
     allowCache: true
@@ -69,7 +72,7 @@ functions:
       tableName: ${self:custom.tableName}
     events:
       - http:
-          path: item/{id}/{sort}
+          path: item/{id}
           method: GET
     iamRoleStatements:
       - Effect: 'Allow'
@@ -185,6 +188,7 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+          
           - IndexName: userId
             KeySchema:
               - AttributeName: userId
@@ -193,4 +197,5 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+        
 
