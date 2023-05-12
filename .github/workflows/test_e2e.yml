@@ -32,7 +32,7 @@ jobs:
         run: sleep 5    
 
       - name: Start serverless offline
-        run: sls offline start --host=localhost --port=3000
+        run: npm run offline
 
   run_tests:
     needs: start_serverless
