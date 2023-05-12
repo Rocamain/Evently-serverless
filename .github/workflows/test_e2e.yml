@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
             npm ci
-            npm serverless -g
+            npm install -g serverless
             sls dynamodb install
 
       - name: Configure AWS Credentials and run test
