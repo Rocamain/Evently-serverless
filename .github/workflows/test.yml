@@ -6,7 +6,7 @@ on:
       - staging
       - main
 jobs:
-  test:
+  integration-test:
     name: Test before deploy to dev
     runs-on: ubuntu-latest
     strategy:
@@ -18,11 +18,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install packages, migrate and test
+      - name: Install packages, migrate and integration test
         run: |
           npm ci
           npm i -g serverless
           npm test
         env:
           tableName: ${{ secrets.tableName }}
+          indexName: ${{ secrets.indexName }}
+          field: ${{ secrets.field }}
           

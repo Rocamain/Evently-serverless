@@ -3,10 +3,11 @@ const { resolve } = require('path')
 
 module.exports = {
   // A list of paths to directories that Jest should use to search for files in
-  roots: ['<rootDir>/'],
+  roots: ['./__tests__/'],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
-  testRegex: '(/__tests__/common/adapter/.*|(\\.|/)(int|spec))\\.js?$',
+
+  testMatch: ['**/*.(int).js'],
   moduleFileExtensions: ['js'],
 
   // The test environment that will be used for testing
