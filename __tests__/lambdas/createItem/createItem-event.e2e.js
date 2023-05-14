@@ -20,10 +20,11 @@ describe('createItem function', () => {
       eventLink: 'hpps://webste.com',
     }
 
-    console.log('heloo')
+    console.log({ API_BASE_URL })
     // WHEN
     const actual = await axios.post(`${API_BASE_URL}/item`, payload)
 
+    console.log(actual)
     // THEN
     expect(actual.status).toBe(201)
   })
