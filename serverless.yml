@@ -26,7 +26,7 @@ custom:
   default_stage: local
   
   serverless-offline:
-    host: 'localhost'
+    host: 0.0.0.0
     httpPort: 3000
     lambdaPort: 3001
     allowCache: true
@@ -37,7 +37,7 @@ custom:
     stages:
       - local
     start:
-      host: 127.0.0.1
+      host: 'localhost'
       port: 8000
       heapInitial: 200m
       heapMax: 1g
