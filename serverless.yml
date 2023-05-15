@@ -37,6 +37,7 @@ custom:
     stages:
       - local
     start:
+      host: 127.0.0.1
       port: 8000
       heapInitial: 200m
       heapMax: 1g
