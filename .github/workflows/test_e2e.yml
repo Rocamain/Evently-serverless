@@ -8,7 +8,8 @@ on:
 
 
 jobs:
-  build-and-test:
+  End-to-end-Test:
+    name: End to End Tests
     runs-on: ubuntu-latest
 
     steps:
