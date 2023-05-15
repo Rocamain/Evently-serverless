@@ -27,7 +27,7 @@ module.exports = class DynamoDbAdapter {
       const config = {
         endpoint: process.env.MOCK_DYNAMODB_ENDPOINT
           ? process.env.MOCK_DYNAMODB_ENDPOINT
-          : 'http://localhost:8000',
+          : 'http://127.0.0.1:8000',
         sslEnabled: false,
         region: 'eu-west-2',
         maxAttempts: 2,

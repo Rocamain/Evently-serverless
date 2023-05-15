@@ -1,6 +1,7 @@
 const { default: axios } = require('axios')
 
 // axios.defaults.baseURL = ``
+const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
 
 describe('createItem function', () => {
   test('should respond with statusCode 200 to correct request', async () => {
@@ -19,9 +20,11 @@ describe('createItem function', () => {
       eventLink: 'hpps://webste.com',
     }
 
+    console.log({ API_BASE_URL })
     // WHEN
-    const actual = await axios.post('http://localhost:3000/item', payload)
+    const actual = await axios.post(`${API_BASE_URL}/item`, payload)
 
+    console.log(actual)
     // THEN
     expect(actual.status).toBe(201)
   })
