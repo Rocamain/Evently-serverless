@@ -15,7 +15,7 @@
     "export-env-local": "sls export-env --all",
     "integration:test": "npm run export-env-local && jest",
     "e2e:test": "jest --config e2e.jest.config.js",
-    "test": "jest"
+    "test": "jest --config jest.config.js"
   },
   "keywords": [],
   "author": "Francisco Javier Roca",

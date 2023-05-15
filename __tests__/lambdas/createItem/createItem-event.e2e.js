@@ -12,20 +12,24 @@ describe('createItem function', () => {
       eventOwnerName: 'Javier Roca',
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
-      eventDescription: 'This is test 1 event',
+      eventDescription: 'This is a description.',
       eventLocation: 'Online',
       eventDate: '23-05-2023',
       eventTime: '12:55',
       eventPrice: 1,
-      eventLink: 'hpps://webste.com',
+      eventLink: 'https://website.com',
     }
 
-    console.log({ API_BASE_URL })
     // WHEN
-    const actual = await axios.post(`${API_BASE_URL}/item`, payload)
+    const { status, data } = await axios.post(`${API_BASE_URL}/item`, payload)
 
-    console.log(actual)
+    const { eventId, createdAt, ...response } = data.data
+
     // THEN
-    expect(actual.status).toBe(201)
+    expect(status).toBe(201)
+    expect(new Date(createdAt)).toBeInstanceOf(Date)
+    expect(createdAt).toBe(new Date(createdAt).toISOString())
+    expect(response).toEqual(response)
+    expect(eventId).toContain('-event')
   })
 })

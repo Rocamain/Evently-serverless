@@ -12,19 +12,19 @@ describe('Integration Test for CRUD Operations on Service', () => {
       eventOwnerName: 'Javier Roca',
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
-      eventDescription: 'This is test 1 event',
+      eventDescription: 'This is a description.',
       eventLocation: 'Online',
       eventDate: '23-04-2023',
       eventTime: '12:55',
       eventPrice: 1,
-      eventLink: 'hpps://webste.com',
+      eventLink: 'https://www.website.com',
     }
 
     const createResult = await service.create(body)
 
-    const [eventId, userId] = createResult.data.eventId.split('-')
-    const itemEventStoredInDb = await service.get(eventId, userId)
-    const itemEventDeleted = await service.delete(eventId, userId)
+    const [eventId, type] = createResult.data.eventId.split('-')
+    const itemEventStoredInDb = await service.get(eventId, type)
+    const itemEventDeleted = await service.delete(eventId, type)
 
     // EXPECTS
     expect(itemEventStoredInDb).toBeTruthy()
@@ -38,12 +38,12 @@ describe('Integration Test for CRUD Operations on Service', () => {
       eventOwnerName: 'Javier Roca',
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
-      eventDescription: 'This is test 1 event',
+      eventDescription: 'This is a description.',
       eventLocation: 'Online',
       eventDate: '23-05-2023',
       eventTime: '12:55',
       eventPrice: 1,
-      eventLink: 'hpps://webste.com',
+      eventLink: 'https://www.website.com',
     }
 
     const createEvent = await service.create(eventBody)
