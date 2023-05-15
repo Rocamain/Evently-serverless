@@ -15,10 +15,12 @@ const handler = async (event, context) => {
 
   return {
     statusCode: 200,
-    'Content-type': 'application/json; charset=UTF-8',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET',
-    'Access-Control-Allow-Credentials': true,
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET',
+      'Access-Control-Allow-Credentials': true,
+    },
     body: response,
   }
 }
