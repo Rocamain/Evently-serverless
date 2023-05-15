@@ -92,13 +92,6 @@ module.exports = class DynamoDbAdapter {
 
       ConsistentRead: true,
     }
-    // if (!id || id.trim() === '') {
-    //   const error = new Error()
-    //   error.msg = 'Id required'
-    //   error.statusCode = 400
-
-    //   throw JSON.parse(error)
-    // }
 
     const response = await this.get(params)
     console.log('Item retrieved successfully')

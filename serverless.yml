@@ -93,7 +93,7 @@ functions:
         field: eventOwnerId
       events:
         - http:
-            path: item/byOwner/{id}
+            path: items/byOwner/{id}
             method: GET
       iamRoleStatements:
         - Effect: 'Allow'
@@ -112,7 +112,7 @@ functions:
         field: userId
       events:
         - http:
-            path: item/byUser/{id}
+            path: items/byUser/{id}
             method: GET
       iamRoleStatements:
         - Effect: 'Allow'

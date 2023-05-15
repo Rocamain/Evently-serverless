@@ -48,7 +48,6 @@ module.exports = class Entity {
     eventDateAndTime,
     eventLink,
     eventPrice,
-
     userId,
     userName,
     userEmail,
@@ -57,7 +56,7 @@ module.exports = class Entity {
       createdAt instanceof Date
         ? createdAt.toISOString()
         : new Date(createdAt).toISOString()
-    this.id = id || generateId(createdAt, type)
+    this.id = id || generateId(createdAt)
     this.type = stingFormatter(type)
 
     this.eventId = eventId
@@ -79,30 +78,34 @@ module.exports = class Entity {
   }
 
   static fromItem(item) {
-    item.id = item?.PK
+    item.id = item.PK
     delete item.PK
 
     const entity = new Entity({ ...item })
     const entitySanitized = entity.sanitizeItem()
     if (entitySanitized) {
-      const { PK, ...restEntity } = entitySanitized
-      const id = PK + '-' + entitySanitized.userId
+      const isEvent = item.type === 'event'
 
-      if (item.type === 'event') {
+      if (isEvent) {
         delete entitySanitized.userId
       }
+      let { PK, ...restEntity } = entitySanitized
+
+      PK = isEvent
+        ? PK + '-' + entitySanitized.type
+        : PK + '-' + entitySanitized.userId
 
       return {
-        [`${entitySanitized.type}Id`]: id,
+        [`${entitySanitized.type}Id`]: PK,
         ...restEntity,
       }
     }
   }
 
   toItem() {
-    return {
-      ...this.sanitizeItem(),
-    }
+    const item = { ...this.sanitizeItem() }
+
+    return item
   }
 
   sanitizeItem() {
@@ -115,6 +118,7 @@ module.exports = class Entity {
             ? (sanitizeEventItem.PK = this.id)
             : (sanitizeEventItem[property] = this[property])
         })
+
         return sanitizeEventItem
       }
       case 'booking': {
