@@ -7,7 +7,7 @@ on:
       - main
 jobs:
   integration-test:
-    name: Test before deploy to dev
+    name: Integration Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
