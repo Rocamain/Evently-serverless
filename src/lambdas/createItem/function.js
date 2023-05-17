@@ -2,7 +2,8 @@ const middy = require('@middy/core')
 const httpJsonBodyParser = require('@middy/http-json-body-parser')
 const httpErrorHandler = require('@middy/http-error-handler')
 const EntityService = require('../../common/service/entityService')
-const customMiddleware = require('../../common/middlewares/requestBodyValidator')
+const bodyValidation = require('../../common/middlewares/requestBodyValidator')
+const customErrors = require('../../common/middlewares/customError')
 
 const myEntityService = new EntityService()
 
@@ -25,7 +26,7 @@ const handler = async (event, context) => {
 
 module.exports.handler = middy()
   .use(httpJsonBodyParser())
-  .use(customMiddleware())
+  .use(bodyValidation())
+  .use(customErrors())
   .use(httpErrorHandler())
   .handler(handler)
-  .use(httpErrorHandler())

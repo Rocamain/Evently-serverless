@@ -12,27 +12,28 @@ module.exports = class EntityService {
   async create(requestBody) {
     if (requestBody.type === 'booking') {
       console.log('Checking if event exists')
-      const eventInfo = await this.get(requestBody.eventId, 'event')
+      const { eventId, ...restRequestBody } = requestBody
+      const eventIdSplit = eventId.split('-')[0]
+      const eventInfo = await this.get(eventIdSplit, 'event')
 
-      const parsedEventInfo = eventInfo
-
-      if (Object.keys(parsedEventInfo.data).length) {
+      if (Object.keys(eventInfo.data).length) {
         const {
           eventLocation,
           eventDateAndTime,
           eventOwnerId,
           eventOwnerName,
-        } = parsedEventInfo.data
+        } = eventInfo.data
         requestBody = {
           eventDateAndTime,
           eventOwnerId,
           eventOwnerName,
           eventLocation,
-          ...requestBody,
+          eventId: eventIdSplit,
+          ...restRequestBody,
         }
       } else {
         const error = new Error()
-        error.message = 'Event not exist'
+        error.message = 'Event does not exist'
         error.name = 'Validation Exception'
         throw error
       }
