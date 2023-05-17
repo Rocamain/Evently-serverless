@@ -1,6 +1,7 @@
 const Ajv = require('ajv')
 const addFormats = require('ajv-formats')
 const getSchema = require('../entity/utils/getSchema')
+const createErrorMsg = require('./utils/createErrorMsg')
 
 const ajv = new Ajv()
 const TimeRegex = /^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]/
@@ -16,7 +17,7 @@ ajv.addFormat('price', {
 addFormats(ajv)
 
 const bodyValidation = () => {
-  const bodyValidationBefore = async ({ event }) => {
+  const bodyValidationBefore = async ({ event, context }) => {
     const schema = getSchema(event.body.type)
     const validate = ajv.compile(schema)
 
@@ -24,31 +25,23 @@ const bodyValidation = () => {
     const valid = validate(data)
 
     if (valid === false) {
-      const msg = `Error on ${
-        validate.errors[0].instancePath.split('/')[1]
-      }: ${validate.errors[0].message.replaceAll('"', '')}`
+      console.log(validate.errors, validate.errors[0].params?.allowedValues)
+      const msg = createErrorMsg(validate.errors[0])
 
-      const error = new Error()
-      error.message = msg
+      // `Error on ${
+      //   validate.errors[0].instancePath.split('/')[1]
+      // }: ${validate.errors[0].message.replaceAll('"', '')}`
+
+      const error = {}
       error.name = 'Validation Exception'
-      throw error
-    }
-  }
+      error.message = msg
 
-  const bodyValidationOnError = async ({ error }) => {
-    if (error) {
-      if (error.name === 'ConditionalCheckFailedException') {
-        error = {}
-        error.message = 'Entry already exist'
-        error.name = 'Conditional check failed exception'
-      }
       return { statusCode: 400, body: JSON.stringify({ error }) }
     }
   }
 
   return {
     before: bodyValidationBefore,
-    onError: bodyValidationOnError,
   }
 }
 
