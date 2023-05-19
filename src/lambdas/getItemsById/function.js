@@ -2,16 +2,22 @@ const middy = require('@middy/core')
 const httpJsonBodyParser = require('@middy/http-json-body-parser')
 const httpErrorHandler = require('@middy/http-error-handler')
 const EntityService = require('../../common/service/entityService')
+const queryParser = require('./utils/queryParser')
 
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
-  const id = event.pathParameters.id
+  const id = event.pathParameters.id.split('-')[0]
 
   const myEntityService = new EntityService()
-  const pastBookings =
-    event.multiValueQueryStringParameters?.pastBookings[0] === 'true'
 
-  const response = await myEntityService.queryByGlobalIndex(id, pastBookings)
+  const { pastBookings, exclusiveStartKey, limit } = queryParser({
+    ...event.headers,
+  })
+  const response = await myEntityService.queryByGlobalIndex(id, {
+    pastBookings,
+    exclusiveStartKey,
+    limit,
+  })
 
   return {
     statusCode: 200,

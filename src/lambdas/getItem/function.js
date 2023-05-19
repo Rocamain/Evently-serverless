@@ -6,13 +6,24 @@ const EntityService = require('../../common/service/entityService')
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
 
-  const id = event.pathParameters.id
-  const userId = event.pathParameters.sort
-  console.log(event.pathParameters)
-  const myEntityService = new EntityService()
+  const [id, userId] = event.pathParameters.id.split('-')
 
-  const response = await myEntityService.get(id, userId)
+  if (id && userId) {
+    const myEntityService = new EntityService()
 
+    const response = await myEntityService.get(id, userId)
+
+    return {
+      statusCode: 200,
+      Headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, DELETE',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify(response),
+    }
+  }
   return {
     statusCode: 200,
     Headers: {
@@ -21,7 +32,7 @@ const handler = async (event, context) => {
       'Access-Control-Allow-Methods': 'GET, DELETE',
       'Access-Control-Allow-Credentials': true,
     },
-    body: JSON.stringify(response),
+    body: JSON.stringify({ data: {} }),
   }
 }
 module.exports.handler = middy(handler)
