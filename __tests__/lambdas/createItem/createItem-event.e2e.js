@@ -26,7 +26,7 @@ describe('createItem function', () => {
 
     const { eventId, createdAt, ...response } = data.data
     event.eventId = data.data.eventId
-    console.log(data.data)
+
     // THEN
     expect(status).toBe(201)
     expect(new Date(createdAt)).toBeInstanceOf(Date)
