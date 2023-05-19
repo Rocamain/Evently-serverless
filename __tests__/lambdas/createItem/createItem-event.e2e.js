@@ -5,11 +5,11 @@ const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
 
 describe('createItem function', () => {
   const event = {}
-  test('should respond with statusCode 200 to correct request item Event', async () => {
+  test('should respond with statusCode 201 to correct request item Event', async () => {
     // GIVEN
     const payload = {
       type: 'event',
-      eventOwnerId: '2',
+      eventOwnerId: 'create_Item_Owner_Id',
       eventOwnerName: 'Javier Roca',
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
@@ -34,13 +34,13 @@ describe('createItem function', () => {
     expect(response).toEqual(response)
     expect(eventId).toContain('-event')
   })
-  test('should respond with statusCode 200 to correct request item Booking', async () => {
+  test('should respond with statusCode 201 to correct request item Booking', async () => {
     // GIVEN
 
     const payload = {
       type: 'booking',
-      userId: 'userId_1',
-      userName: '2',
+      userId: 'create_Item_Owner_Id_userId_1',
+      userName: 'John Doe',
       userEmail: 'userId_1@fakeemail.com',
       eventId: event.eventId,
     }
@@ -62,8 +62,8 @@ describe('createItem function', () => {
 
     const payload = {
       type: 'booking',
-      userId: 'userId_1',
-      userName: '2',
+      userId: 'create_Item_Owner_Id_userId_1',
+      userName: 'John Doe',
       userEmail: 'userId_1@fakeemail.com',
       eventId: event.eventId,
     }

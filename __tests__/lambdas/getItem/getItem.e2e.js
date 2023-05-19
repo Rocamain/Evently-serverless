@@ -13,8 +13,8 @@ describe('getItem function', () => {
     // GIVEN
     const payload = {
       type: 'event',
-      eventOwnerId: '2',
-      eventOwnerName: 'Javier Roca',
+      eventOwnerId: 'get_Item_Owner_id_1',
+      eventOwnerName: 'Owner_Name_getItem',
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
