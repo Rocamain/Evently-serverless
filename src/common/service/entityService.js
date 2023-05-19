@@ -60,11 +60,11 @@ module.exports = class EntityService {
     return { data: entityItem ? Entity.fromItem(entityItem) : {} }
   }
 
-  async queryByGlobalIndex(id, pastBookings) {
+  async queryByGlobalIndex(id, { pastBookings, exclusiveStartKey, limit }) {
     console.log(
       `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,
     )
-
+    console.log({ pastBookings, typeof: typeof pastBookings })
     const response = await this.dynamoDbAdapter.queryIndexByField(
       this.tableName,
       {
@@ -72,10 +72,13 @@ module.exports = class EntityService {
         field: this.field,
         value: id,
         pastBookings,
+        exclusiveStartKey,
+        limit,
       },
     )
 
     const items = response.Items
+    const lastEvaluatedKey = response.LastEvaluatedKey
 
     if (items.length) {
       console.log('Items found')
@@ -84,6 +87,7 @@ module.exports = class EntityService {
 
       return JSON.stringify({
         data: itemsEntities,
+        lastEvaluatedKey,
       })
     } else {
       console.log('Items not found')

@@ -9,6 +9,7 @@ const {
 } = require('@aws-sdk/lib-dynamodb')
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
 const https = require('https')
+const createDateExpression = require('./utils/createDateExpression')
 
 module.exports = class DynamoDbAdapter {
   constructor() {
@@ -201,36 +202,13 @@ module.exports = class DynamoDbAdapter {
 
   async queryIndexByField(
     tableName,
-    { indexName, field, value, limit, pastBookings = false },
+    { indexName, field, value, limit, pastBookings, exclusiveStartKey },
   ) {
     console.log(
       `Getting items from DynamoDB table: ${tableName} by with ${field}=${value} `,
     )
-
-    const FIVE_MINUTES = 300000
-    const expression = pastBookings
-      ? '#field = :value'
-      : '#field = :value AND #field2 >= :value2'
-
-    const expressionAttributeNames = pastBookings
-      ? {
-          '#field': field,
-        }
-      : {
-          '#field': field,
-          '#field2': 'eventDateAndTime',
-        }
-
-    const expressionAttributeValues = pastBookings
-      ? {
-          ':value': value,
-        }
-      : {
-          ':value': value,
-          ':value2': new Date(
-            new Date().getTime() + FIVE_MINUTES,
-          ).toISOString(),
-        }
+    const { expression, expressionAttributeNames, expressionAttributeValues } =
+      createDateExpression({ pastBookings, field, value })
 
     const params = {
       TableName: tableName,
@@ -239,10 +217,12 @@ module.exports = class DynamoDbAdapter {
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
       ScanIndexForward: true,
-      Limit: limit,
+      ExclusiveStartKey: exclusiveStartKey,
+      Limit: limit || 10,
     }
 
     const response = await this.query(params)
+
     console.log('Items retrieved successfully')
     return response
   }
