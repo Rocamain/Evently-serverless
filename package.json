@@ -15,6 +15,7 @@
     "export-env-local": "sls export-env --all",
     "integration:test": "npm run export-env-local && jest",
     "e2e:test": "jest --config e2e.jest.config.js",
+    "e2e-create-item:test": "jest --config config/e2e.create-item.jest.config.js",
     "test": "jest --config jest.config.js"
   },
   "keywords": [],
