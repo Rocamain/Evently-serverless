@@ -116,7 +116,14 @@ describe('getItemBy function', () => {
 
       expect(statusByOwnerIdOne).toBe(200)
       expect(statusByOwnerIdTwo).toBe(200)
-
+      console.log({
+        dataByOwnerIdTwo: dataByOwnerIdTwo.data,
+        eventsEventOwnerIdTwo: eventsEventOwnerIdTwo.data,
+      })
+      console.log({
+        dataByOwnerIdOne: dataByOwnerIdOne.data,
+        eventsEventOwnerIdOne: eventsEventOwnerIdOne.data,
+      })
       // check ownerIdData events vs query
       expect(dataByOwnerIdOne).toEqual(eventsEventOwnerIdOne)
       expect(dataByOwnerIdTwo).toEqual(eventsEventOwnerIdTwo)
