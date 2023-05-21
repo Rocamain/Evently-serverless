@@ -9,7 +9,7 @@ on:
 
 jobs:
   End-to-end-Test:
-    name: POST /item
+    name: GET /items/byOwner/{id} and /items/byUser/{id}
     runs-on: ubuntu-latest
 
     steps:
@@ -33,7 +33,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
       - name: Run test
-        run: npm run e2e-create-item:test
+        run: npm run e2e-get-item-by:test
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

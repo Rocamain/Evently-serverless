@@ -3,7 +3,7 @@ const { resolve } = require('path')
 
 module.exports = {
   // A list of paths to directories that Jest should use to search for files in
-  roots: ['./__tests__/'],
+  roots: ['../../__tests__/'],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
 
@@ -29,7 +29,7 @@ module.exports = {
 }
 
 config({
-  path: resolve(__dirname, './.awsenv'),
+  path: resolve(__dirname, '../../.awsenv'),
   bail: 1,
   testEnvironment: 'node',
 })
