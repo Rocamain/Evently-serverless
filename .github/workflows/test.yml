@@ -21,7 +21,7 @@ jobs:
         run: |
           npm ci
           npm i -g serverless
-          npm test
+          npm run int:test
         env:
           tableName: ${{ secrets.tableName }}
           indexName: ${{ secrets.indexName }}
