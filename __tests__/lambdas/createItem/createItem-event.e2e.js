@@ -14,6 +14,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '23-05-2023',
       eventTime: '12:55',
@@ -282,6 +283,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '23-05-2023',
       eventTime: '12:55',
@@ -312,6 +314,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javierfakeemail.com', // Error here
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '23-05-2023',
       eventTime: '12:55',
@@ -342,6 +345,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '41-05-2023', // Error here
       eventTime: '12:55',
@@ -372,6 +376,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '21-05-2023',
       eventTime: '25:55', // Error here
@@ -403,6 +408,7 @@ describe('createItem function', () => {
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
       eventLocation: 'Online',
+      eventCategory: 'other',
       eventDate: '21-05-2023',
       eventTime: '22:55',
       eventPrice: false, // Error here
@@ -432,6 +438,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '21-05-2023',
       eventTime: '22:55',

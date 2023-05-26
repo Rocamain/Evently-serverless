@@ -18,6 +18,7 @@ describe('getItemBy function', () => {
         eventOwnerEmail: 'javier@fakeemail.com',
         eventTitle: 'Event 1',
         eventDescription: 'This is a description.',
+        eventCategory: 'other',
         eventLocation: 'Online',
         eventDate: '23-05-2030',
         eventTime: '12:55',
@@ -29,6 +30,7 @@ describe('getItemBy function', () => {
         eventOwnerId: '1',
         eventOwnerName: 'Javier Roca',
         eventOwnerEmail: 'javier@fakeemail.com',
+        eventCategory: 'other',
         eventTitle: 'Event 2',
         eventDescription: 'This is a description.',
         eventLocation: 'Online',
@@ -44,6 +46,7 @@ describe('getItemBy function', () => {
         eventOwnerEmail: 'francisco@fakeemail.com',
         eventTitle: 'Event 3',
         eventDescription: 'This is a description.',
+        eventCategory: 'other',
         eventLocation: 'Online',
         eventDate: '25-05-2030',
         eventTime: '12:55',
@@ -58,6 +61,7 @@ describe('getItemBy function', () => {
         eventOwnerEmail: 'javier@fakeemail.com',
         eventTitle: 'Event 3',
         eventDescription: 'This is a description.',
+        eventCategory: 'other',
         eventLocation: 'Online',
         eventDate: '28-05-2030',
         eventTime: '12:55',
@@ -162,6 +166,7 @@ describe('getItemBy function', () => {
         eventOwnerEmail: 'javier@fakeemail.com',
         eventTitle: 'Event 1',
         eventDescription: 'This is a description.',
+        eventCategory: 'travel',
         eventLocation: 'Online',
         eventDate: '23-05-2012',
         eventTime: '12:55',
@@ -174,6 +179,7 @@ describe('getItemBy function', () => {
         `${API_BASE_URL}/item`,
         payloadEventFive,
       )
+
       pastBookingToBookOne.data = dataFive.data
       const { status: statusByOwnerIdOnePast, data: dataByOwnerIdOnePast } =
         await axios.get(
@@ -181,14 +187,15 @@ describe('getItemBy function', () => {
           `,
           {
             headers: {
-              pastBookings: true,
+              includePast: true,
             },
           },
         )
+
       const { status: statusByOwnerIdOne, data: dataByOwnerIdOne } =
         await axios.get(`${API_BASE_URL}/items/byOwner/1`, {
           headers: {
-            pastBookings: false,
+            includePast: false,
           },
         })
 
@@ -198,6 +205,7 @@ describe('getItemBy function', () => {
       expect(dataByOwnerIdOne.data.length).toBe(3)
       expect(statusByOwnerIdOnePast).toBe(200)
       expect(dataByOwnerIdOnePast.data.length).toBe(4)
+      // expect(pastBookingToBookOne).toBe(1)
     })
     test('should respond with statusCode 200 to correct request zero items byOwnerId that does not exist', async () => {
       // WHEN
@@ -239,7 +247,7 @@ describe('getItemBy function', () => {
           `${API_BASE_URL}/items/byUser/${payloadBookingOneUserOne.userId}`,
           {
             headers: {
-              pastBookings: true,
+              includePast: true,
             },
           },
         )
@@ -258,6 +266,7 @@ describe('getItemBy function', () => {
         userEmail: 'javier@fakeemail.com',
         eventId: pastBookingToBookOne.data.eventId,
       }
+
       // WHEN
       const { status: statusBookingTwo, data: dataBookingTwo } =
         await axios.post(`${API_BASE_URL}/item`, payloadBookingTwoUserOne)
@@ -267,7 +276,7 @@ describe('getItemBy function', () => {
           `${API_BASE_URL}/items/byUser/${payloadBookingTwoUserOne.userId}`,
           {
             headers: {
-              pastBookings: true,
+              includePast: true,
             },
           },
         )

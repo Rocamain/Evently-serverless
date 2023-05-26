@@ -18,6 +18,7 @@ describe('getItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '23-05-2023',
       eventTime: '12:55',
