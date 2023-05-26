@@ -19,6 +19,7 @@ addFormats(ajv)
 const bodyValidation = () => {
   const bodyValidationBefore = async ({ event, context }) => {
     const schema = getSchema(event.body.type)
+
     const validate = ajv.compile(schema)
 
     const data = event.body

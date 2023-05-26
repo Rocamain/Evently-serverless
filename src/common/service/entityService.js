@@ -11,7 +11,6 @@ module.exports = class EntityService {
 
   async create(requestBody) {
     if (requestBody.type === 'booking') {
-      console.log('Checking if event exists')
       const { eventId, ...restRequestBody } = requestBody
       const eventIdSplit = eventId.split('-')[0]
       const eventInfo = await this.get(eventIdSplit, 'event')
@@ -22,12 +21,16 @@ module.exports = class EntityService {
           eventDateAndTime,
           eventOwnerId,
           eventOwnerName,
+          eventTitle,
+          eventCategory,
         } = eventInfo.data
         requestBody = {
           eventDateAndTime,
           eventOwnerId,
           eventOwnerName,
           eventLocation,
+          eventTitle,
+          eventCategory,
           eventId: eventIdSplit,
           ...restRequestBody,
         }
@@ -60,20 +63,18 @@ module.exports = class EntityService {
     return { data: entityItem ? Entity.fromItem(entityItem) : {} }
   }
 
-  async queryByGlobalIndex(id, { pastBookings, exclusiveStartKey, limit }) {
+  async queryByGlobalIndex(id, params) {
     console.log(
       `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,
     )
-    console.log({ pastBookings, typeof: typeof pastBookings })
+
     const response = await this.dynamoDbAdapter.queryIndexByField(
       this.tableName,
       {
         indexName: this.indexName,
         field: this.field,
         value: id,
-        pastBookings,
-        exclusiveStartKey,
-        limit,
+        ...params,
       },
     )
 
@@ -97,6 +98,8 @@ module.exports = class EntityService {
   }
 
   async delete(id, userId) {
+    //  if item to delete is an Event, then delete the booking to that event.
+
     if (userId === 'event') {
       const { Items, Count } = await this.dynamoDbAdapter.queryByField(
         this.tableName,
@@ -105,6 +108,8 @@ module.exports = class EntityService {
           value: id,
         },
       )
+
+      console.log('service', { Count })
 
       console.log(
         `Deleting Entities items  with id ${id} from repository entityService from table ${process.env.tableName}`,
@@ -117,7 +122,7 @@ module.exports = class EntityService {
         count: Count,
       })
 
-      return { message: 'Items deleted' }
+      return { data: { message: 'Items deleted' } }
     } else {
       console.log(
         `Deleting Entity item id ${id} from repository entityService from table ${process.env.tableName}`,
