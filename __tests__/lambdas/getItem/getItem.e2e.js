@@ -70,7 +70,7 @@ describe('getItem function', () => {
       userId: 'userId_1',
       userName: '2',
       userEmail: 'userId_1@fakeemail.com',
-      eventId: event.data.eventId,
+      eventId: event.data.eventId.split('-')[0],
     }
 
     // WHEN

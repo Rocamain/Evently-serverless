@@ -85,7 +85,9 @@ describe('getItemBy function', () => {
       )
 
       // I will use this variable later to make booking as i need to have access to eventId, randomly generated
+
       eventToBookOne.data = dataThree.data
+
       const { status: statusFour, data: dataFour } = await axios.post(
         `${API_BASE_URL}/item`,
         payloadEventFour,
@@ -235,7 +237,7 @@ describe('getItemBy function', () => {
         userId: '1',
         userName: 'Javier Roca',
         userEmail: 'javier@fakeemail.com',
-        eventId: eventToBookOne.data.eventId,
+        eventId: eventToBookOne.data.eventId.split('-')[0],
       }
 
       // THEN
@@ -264,7 +266,7 @@ describe('getItemBy function', () => {
         userId: '1',
         userName: 'Javier Roca',
         userEmail: 'javier@fakeemail.com',
-        eventId: pastBookingToBookOne.data.eventId,
+        eventId: pastBookingToBookOne.data.eventId.split('-')[0],
       }
 
       // WHEN

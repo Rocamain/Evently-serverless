@@ -26,7 +26,7 @@ describe('createItem function', () => {
     const { status, data } = await axios.post(`${API_BASE_URL}/item`, payload)
 
     const { eventId, createdAt, ...response } = data.data
-    event.eventId = data.data.eventId
+    event.eventId = data.data.eventId.split('-')[0]
 
     // THEN
     expect(status).toBe(201)
