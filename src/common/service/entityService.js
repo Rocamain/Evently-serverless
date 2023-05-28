@@ -12,8 +12,8 @@ module.exports = class EntityService {
   async create(requestBody) {
     if (requestBody.type === 'booking') {
       const { eventId, ...restRequestBody } = requestBody
-      const eventIdSplit = eventId.split('-')[0]
-      const eventInfo = await this.get(eventIdSplit, 'event')
+
+      const eventInfo = await this.get(eventId, 'event')
 
       if (Object.keys(eventInfo.data).length) {
         const {
@@ -31,7 +31,7 @@ module.exports = class EntityService {
           eventLocation,
           eventTitle,
           eventCategory,
-          eventId: eventIdSplit,
+          eventId,
           ...restRequestBody,
         }
       } else {
@@ -44,6 +44,7 @@ module.exports = class EntityService {
     console.log(
       `Creating entity item in repository on table ${process.env.tableName}`,
     )
+
     const entityService = new Entity(requestBody).toItem()
 
     await this.dynamoDbAdapter.createItem(this.tableName, entityService)
@@ -55,6 +56,7 @@ module.exports = class EntityService {
     console.log(
       `Retrieving Entity item id ${id} from repository entityService from table ${process.env.tableName}`,
     )
+
     const entityItem = await this.dynamoDbAdapter.getItem(this.tableName, {
       id,
       userId,
@@ -108,8 +110,6 @@ module.exports = class EntityService {
           value: id,
         },
       )
-
-      console.log('service', { Count })
 
       console.log(
         `Deleting Entities items  with id ${id} from repository entityService from table ${process.env.tableName}`,

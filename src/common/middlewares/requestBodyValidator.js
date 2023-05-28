@@ -26,12 +26,7 @@ const bodyValidation = () => {
     const valid = validate(data)
 
     if (valid === false) {
-      console.log(validate.errors, validate.errors[0].params?.allowedValues)
       const msg = createErrorMsg(validate.errors[0])
-
-      // `Error on ${
-      //   validate.errors[0].instancePath.split('/')[1]
-      // }: ${validate.errors[0].message.replaceAll('"', '')}`
 
       const error = {}
       error.name = 'Validation Exception'
