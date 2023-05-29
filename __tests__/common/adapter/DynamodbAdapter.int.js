@@ -9,6 +9,7 @@ describe('Integration Test for on Adapter ', () => {
   })
 
   test('create, delete an item and query', async () => {
+    // GIVEN
     const createParams = {
       Item: { PK: 'SampleId', userId: 'event' },
       ReturnConsumedCapacity: 'TOTAL',
@@ -21,6 +22,7 @@ describe('Integration Test for on Adapter ', () => {
       ReturnConsumedCapacity: 'TOTAL',
     }
 
+    //  THEN
     const createResults = await client.create(createParams)
 
     const deleteResults = await client.delete(deleteParams)
@@ -43,6 +45,7 @@ describe('Integration Test for on Adapter ', () => {
   })
 
   test('create, get, delete an item and query', async () => {
+    //  GIVEN
     const paramsCreate = {
       Item: {
         PK: 'SampleId',
@@ -68,6 +71,7 @@ describe('Integration Test for on Adapter ', () => {
       TableName: process.env.tableName,
     }
 
+    //  THEN
     const createResults = await client.create(paramsCreate)
     const getResults = await client.get(paramsGet)
     const deleteResults = await client.delete(paramsDelete)
@@ -92,6 +96,7 @@ describe('Integration Test for on Adapter ', () => {
   })
 
   test('create two items with same id, delete by batch id and query', async () => {
+    // GIVEN
     const paramsCreateSameID1 = {
       Item: {
         PK: 'SampleId',
@@ -118,7 +123,7 @@ describe('Integration Test for on Adapter ', () => {
       },
       ReturnConsumedCapacity: 'TOTAL',
     }
-
+    // THEN
     const createResultsSameID1 = await client.create(paramsCreateSameID1)
     const createResultsSameID2 = await client.create(paramsCreateSameID2)
 
@@ -128,6 +133,7 @@ describe('Integration Test for on Adapter ', () => {
       value: 'SampleId',
     })
 
+    //  EXPECTS
     expect(createResultsSameID1).toBeTruthy()
     expect(createResultsSameID1.ConsumedCapacity.TableName).toMatch(
       process.env.tableName,
@@ -145,6 +151,7 @@ describe('Integration Test for on Adapter ', () => {
   })
 
   test('create one item and queryIndexByField userId and ownerId, check, delete and check', async () => {
+    //  WHEN
     const paramsCreateSameID1 = {
       Item: {
         PK: 'SampleId',
@@ -156,19 +163,21 @@ describe('Integration Test for on Adapter ', () => {
       TableName: process.env.tableName,
     }
 
+    // THEN
     const createResultsSameID1 = await client.create(paramsCreateSameID1)
 
     const queryByGlobalIndexOwnerId = {
       indexName: 'eventOwnerId',
       field: 'eventOwnerId',
       value: paramsCreateSameID1.Item.eventOwnerId,
-      pastBookings: true,
+      includePast: true,
     }
+
     const queryByGlobalIndexUserId = {
       indexName: 'userId',
       field: 'userId',
       value: paramsCreateSameID1.Item.userId,
-      pastBookings: true,
+      includePast: true,
     }
 
     const queryByEventOwnerId = await client.queryIndexByField(
@@ -195,6 +204,7 @@ describe('Integration Test for on Adapter ', () => {
       userId: 'SampleUserId',
     })
 
+    // EXPECTS
     expect(createResultsSameID1).toBeTruthy()
     expect(createResultsSameID1.ConsumedCapacity.TableName).toMatch(
       process.env.tableName,

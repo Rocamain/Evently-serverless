@@ -11,6 +11,7 @@ const EVENT_PROPERTIES = [
   'eventOwnerEmail',
   'eventTitle',
   'eventDescription',
+  'eventCategory',
   'eventLocation',
   'eventDateAndTime',
   'eventPrice',
@@ -26,9 +27,11 @@ const BOOKING_PROPERTIES = [
   'userEmail',
   'eventId',
   'eventDateAndTime',
-  'eventOwnerId',
   'eventOwnerName',
+  'eventOwnerId',
+  'eventTitle',
   'eventLocation',
+  'eventCategory',
 ]
 
 module.exports = class Entity {
@@ -42,6 +45,7 @@ module.exports = class Entity {
     eventOwnerEmail,
     eventTitle,
     eventDescription,
+    eventCategory,
     eventLocation,
     eventDate,
     eventTime,
@@ -58,13 +62,13 @@ module.exports = class Entity {
         : new Date(createdAt).toISOString()
     this.id = id || generateId(createdAt)
     this.type = stingFormatter(type)
-
     this.eventId = eventId
     this.eventOwnerId = eventOwnerId
     this.eventOwnerName = eventOwnerName
     this.eventOwnerEmail = stingFormatter(eventOwnerEmail)
     this.eventTitle = eventTitle
     this.eventDescription = eventDescription
+    this.eventCategory = eventCategory
     this.eventLocation = eventLocation
     this.eventDateAndTime =
       eventDate && eventTime
@@ -88,6 +92,9 @@ module.exports = class Entity {
 
       if (isEvent) {
         delete entitySanitized.userId
+      }
+      if (!isEvent) {
+        delete entitySanitized.eventOwnerId
       }
       let { PK, ...restEntity } = entitySanitized
 

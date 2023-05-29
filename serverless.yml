@@ -50,7 +50,7 @@ functions:
     handler: src/lambdas/createItem/function.handler
     description: Create Item in repository
     memorySize: 128
-    timeout: 5
+    timeout: 40
     environment:
       tableName: ${self:custom.tableName}
     events:
@@ -86,7 +86,7 @@ functions:
       handler: src/lambdas/getItemsById/function.handler
       description: Get Items from repository by eventOwner.
       memorySize: 128
-      timeout: 5
+      timeout: 35
       environment:
         tableName: ${self:custom.tableName}
         indexName: eventOwnerId
@@ -105,7 +105,7 @@ functions:
       handler: src/lambdas/getItemsById/function.handler
       description: Get Items from repository by eventOwner.
       memorySize: 128
-      timeout: 5
+      timeout: 35
       environment:
         tableName: ${self:custom.tableName}
         indexName: userId
@@ -170,9 +170,7 @@ resources:
             KeyType: HASH
           - AttributeName: userId
             KeyType: RANGE  
-         
-        BillingMode: PAY_PER_REQUEST
-        
+        BillingMode: PAY_PER_REQUEST     
         Tags:
           - Key: Application
             Value: ${self:service}
@@ -198,6 +196,4 @@ resources:
               - AttributeName: eventDateAndTime
                 KeyType: RANGE
             Projection:
-              ProjectionType: ALL
-        
-
+              ProjectionType: ALL      

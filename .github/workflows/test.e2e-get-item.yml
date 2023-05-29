@@ -1,4 +1,4 @@
-name: Serverless API Test
+name: E2E Test
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   End-to-end-Test:
-    name: End to End Tests
+    name: GET /item/{id}
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 16
 
       - name: Install dependencies
         run: |
@@ -27,13 +27,13 @@ jobs:
             npm install -g serverless
             sls dynamodb install
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
       - name: Run test
-        run: npm run e2e:test
+        run: npm run e2e-get-item:test
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
