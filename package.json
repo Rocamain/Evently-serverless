@@ -13,9 +13,13 @@
     "offline": "sls offline start",
     "deploy:prod": "sls deploy -s prod",
     "export-env-local": "sls export-env --all",
-    "integration:test": "npm run export-env-local && jest",
-    "e2e:test": "jest --config e2e.jest.config.js",
-    "test": "jest --config jest.config.js"
+    "e2e:test": "npm run e2e-create-item:test && npm run e2e-get-item:test && npm run e2e-get-item-by:test && npm run e2e-delete-item:test",
+    "e2e-create-item:test": "jest --config config/end2end/e2e.create-item.jest.config.js",
+    "e2e-delete-item:test": "jest --config config/end2end/e2e.delete-item.jest.config.js",
+    "e2e-get-item:test": "jest --config config/end2end/e2e.get-item.jest.config.js",
+    "e2e-get-item-by:test": "jest --config config/end2end/e2e.get-item-by.jest.config.js",
+    "int:test": "npm run export-env-local && jest --config config/integration/int.jest.config.js",
+    "test":  "npm int:test && npm e2e:test"
   },
   "keywords": [],
   "author": "Francisco Javier Roca",

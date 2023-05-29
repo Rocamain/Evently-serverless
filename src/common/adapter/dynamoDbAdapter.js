@@ -9,7 +9,8 @@ const {
 } = require('@aws-sdk/lib-dynamodb')
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
 const https = require('https')
-const createDateExpression = require('./utils/createDateExpression')
+const createFilterExpression = require('./utils/createFilterExpression.js')
+const getUniqueCombinations = require('./utils/getUniqueCombinations')
 
 module.exports = class DynamoDbAdapter {
   constructor() {
@@ -143,20 +144,28 @@ module.exports = class DynamoDbAdapter {
         if (count <= 0) {
           return
         }
+
+        const currentBatchSize = Math.min(count, batchSize) // Adjust batch size based on remaining items
         const batchItems = {
-          [tableName]: itemKeys.slice(0, 25).map((key) => ({
+          [tableName]: itemKeys.slice(0, currentBatchSize).map((key) => ({
             DeleteRequest: { Key: key },
           })),
         }
+
         const batchWriteCommand = {
           RequestItems: batchItems,
           ReturnConsumedCapacity: 'TOTAL',
         }
 
         await this.batchDelete(batchWriteCommand)
+
         console.log('Batch Items deleted successfully')
 
-        return recursiveBatchDelete(itemKeys, count - 25, batchSize)
+        return recursiveBatchDelete(
+          itemKeys.slice(currentBatchSize),
+          count - currentBatchSize,
+          batchSize,
+        )
       }
 
       return await recursiveBatchDelete(itemKeys, count, batchSize)
@@ -202,29 +211,50 @@ module.exports = class DynamoDbAdapter {
 
   async queryIndexByField(
     tableName,
-    { indexName, field, value, limit, pastBookings, exclusiveStartKey },
+    { indexName, searchWords, value, limit, exclusiveStartKey, ...params },
   ) {
     console.log(
-      `Getting items from DynamoDB table: ${tableName} by with ${field}=${value} `,
+      `Getting items from DynamoDB table: ${tableName} by with ${indexName}=${value} `,
     )
-    const { expression, expressionAttributeNames, expressionAttributeValues } =
-      createDateExpression({ pastBookings, field, value })
+    const searchWordsCombinations = searchWords
+      ? getUniqueCombinations(searchWords)
+      : null
 
-    const params = {
+    const {
+      expression,
+      expressionAttributeNames,
+      expressionAttributeValues,
+      filterExpression,
+    } = createFilterExpression({
+      value,
+      searchWords: searchWordsCombinations,
+      ...params,
+    })
+
+    const queryParams = {
       TableName: tableName,
       IndexName: indexName,
       KeyConditionExpression: expression,
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
       ScanIndexForward: true,
-      ExclusiveStartKey: exclusiveStartKey,
       Limit: limit || 10,
     }
 
-    const response = await this.query(params)
+    if (exclusiveStartKey) {
+      queryParams.ExclusiveStartKey = exclusiveStartKey
+    }
 
-    console.log('Items retrieved successfully')
-    return response
+    if (filterExpression) {
+      queryParams.FilterExpression = filterExpression
+    }
+    try {
+      const response = await this.query(queryParams)
+      console.log('Items retrieved successfully')
+      return response
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   async query(params) {

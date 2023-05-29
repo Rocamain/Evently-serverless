@@ -5,15 +5,16 @@ const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
 
 describe('createItem function', () => {
   const event = {}
-  test('should respond with statusCode 200 to correct request item Event', async () => {
+  test('should respond with statusCode 201 to correct request item Event', async () => {
     // GIVEN
     const payload = {
       type: 'event',
-      eventOwnerId: '2',
+      eventOwnerId: 'create_Item_Owner_Id',
       eventOwnerName: 'Javier Roca',
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '23-05-2023',
       eventTime: '12:55',
@@ -26,7 +27,7 @@ describe('createItem function', () => {
 
     const { eventId, createdAt, ...response } = data.data
     event.eventId = data.data.eventId
-    console.log(data.data)
+
     // THEN
     expect(status).toBe(201)
     expect(new Date(createdAt)).toBeInstanceOf(Date)
@@ -34,13 +35,13 @@ describe('createItem function', () => {
     expect(response).toEqual(response)
     expect(eventId).toContain('-event')
   })
-  test('should respond with statusCode 200 to correct request item Booking', async () => {
+  test('should respond with statusCode 201 to correct request item Booking', async () => {
     // GIVEN
 
     const payload = {
       type: 'booking',
-      userId: 'userId_1',
-      userName: '2',
+      userId: 'create_Item_Owner_Id_userId_1',
+      userName: 'John Doe',
       userEmail: 'userId_1@fakeemail.com',
       eventId: event.eventId,
     }
@@ -62,8 +63,8 @@ describe('createItem function', () => {
 
     const payload = {
       type: 'booking',
-      userId: 'userId_1',
-      userName: '2',
+      userId: 'create_Item_Owner_Id_userId_1',
+      userName: 'John Doe',
       userEmail: 'userId_1@fakeemail.com',
       eventId: event.eventId,
     }
@@ -282,6 +283,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '23-05-2023',
       eventTime: '12:55',
@@ -312,6 +314,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javierfakeemail.com', // Error here
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '23-05-2023',
       eventTime: '12:55',
@@ -342,6 +345,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '41-05-2023', // Error here
       eventTime: '12:55',
@@ -372,6 +376,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '21-05-2023',
       eventTime: '25:55', // Error here
@@ -403,6 +408,7 @@ describe('createItem function', () => {
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
       eventLocation: 'Online',
+      eventCategory: 'other',
       eventDate: '21-05-2023',
       eventTime: '22:55',
       eventPrice: false, // Error here
@@ -432,6 +438,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '21-05-2023',
       eventTime: '22:55',
