@@ -18,7 +18,8 @@
     "e2e-delete-item:test": "jest --config config/end2end/e2e.delete-item.jest.config.js",
     "e2e-get-item:test": "jest --config config/end2end/e2e.get-item.jest.config.js",
     "e2e-get-item-by:test": "jest --config config/end2end/e2e.get-item-by.jest.config.js",
-    "int:test": "npm run export-env-local && jest --config config/integration/int.jest.config.js",
+    "int:test": "jest --config config/integration/int.jest.config.js",
+    "int:test-local": "npm run export-env-local && jest --config config/integration/int.jest.config.js",
     "test":  "npm int:test && npm e2e:test"
   },
   "keywords": [],
