@@ -29,7 +29,7 @@ describe('deleteItem function', () => {
 
     const { eventId, createdAt, ...response } = data.data
     event.eventId = data.data.eventId
-    event.eventOwnerId = data.data.eventOwnerId
+    event.eventOwnerId = data.data.eventOwnerId.split('-')[0]
 
     // THEN
     expect(status).toBe(201)

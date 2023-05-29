@@ -6,6 +6,7 @@ describe('Integration Test for CRUD Operations on Service', () => {
   const service = new EntityService()
 
   test('create and delete an item event', async () => {
+    // WHEN
     const body = {
       type: 'event',
       eventOwnerId: '2',
@@ -20,18 +21,21 @@ describe('Integration Test for CRUD Operations on Service', () => {
       eventLink: 'https://www.website.com',
     }
 
+    // THEN
     const createResult = await service.create(body)
 
     const [eventId, type] = createResult.data.eventId.split('-')
     const itemEventStoredInDb = await service.get(eventId, type)
+
     const itemEventDeleted = await service.delete(eventId, type)
 
     // EXPECTS
     expect(itemEventStoredInDb).toBeTruthy()
     expect(createResult).toEqual(itemEventStoredInDb)
-    expect(itemEventDeleted.message).toBe('Items deleted')
+    expect(itemEventDeleted.data.message).toBe('Items deleted')
   })
   test('create an event and booking with eventID, queryByIndex userId on booking and delete an item event which also delete booking', async () => {
+    //  WHEN
     const eventBody = {
       type: 'event',
       eventOwnerId: '2',
@@ -39,16 +43,18 @@ describe('Integration Test for CRUD Operations on Service', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
-      eventDate: '23-05-2023',
+      eventDate: '23-05-2030',
       eventTime: '12:55',
       eventPrice: 1,
       eventLink: 'https://www.website.com',
     }
 
+    // THEN
     const createEvent = await service.create(eventBody)
 
-    const [eventId, userId] = createEvent.data.eventId.split('-')
+    const [eventId] = createEvent.data.eventId.split('-')
 
     const bookingBody = {
       type: 'booking',
@@ -60,26 +66,24 @@ describe('Integration Test for CRUD Operations on Service', () => {
 
     const createBooking = await service.create(bookingBody)
 
-    const itemEventStoredInDb = await service.get(eventId, userId)
+    const itemEventStoredInDb = await service.get(eventId, 'event')
     const queryByEventUserId = await service.queryByGlobalIndex(
       bookingBody.userId,
-      true,
     )
 
-    const itemEventDeleted = await service.delete(eventId, userId)
+    const itemEventDeleted = await service.delete(eventId, 'event')
+
     const itemBookingStoredInDb = await service.get(
-      createBooking.data.bookingId,
+      createBooking.data.bookingId.split('-')[0],
       createBooking.data.userId,
     )
-
     // EXPECTS
 
     expect(createBooking).toBeTruthy()
     expect(queryByEventUserId).toBeTruthy()
     expect(createEvent).toEqual(itemEventStoredInDb)
     expect(createBooking.data).toEqual(JSON.parse(queryByEventUserId).data[0])
-    expect(itemEventDeleted.message).toBe('Items deleted')
+    expect(itemEventDeleted.data.message).toBe('Items deleted')
     expect(itemBookingStoredInDb.data).toEqual({})
   })
-  test('create an event and booking with eventID and delete an item event which also delete booking', async () => {})
 })
