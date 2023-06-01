@@ -25,7 +25,10 @@ describe('deleteItem function', () => {
     }
 
     // WHEN
-    const { status, data } = await axios.post(`${API_BASE_URL}/item`, payload)
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
+    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
 
     const { eventId, createdAt, ...response } = data.data
     event.eventId = data.data.eventId
@@ -59,9 +62,11 @@ describe('deleteItem function', () => {
     })
 
     const bookingsResponse = await Promise.all(
-      bookings.map((bookingPayload) =>
-        axios.post(`${API_BASE_URL}/item`, bookingPayload),
-      ),
+      bookings.map((bookingPayload) => {
+        const form = new FormData()
+        form.append('data', JSON.stringify(bookingPayload))
+        return axios.post(`${API_BASE_URL}/item`, form)
+      }),
     )
 
     firstBooking.data = bookingsResponse[0].data.data
@@ -82,7 +87,7 @@ describe('deleteItem function', () => {
     const { data: dataByOwnerId } = await axios.get(
       `${API_BASE_URL}/items/byOwner/${event.eventOwnerId}`,
       {
-        headers: { limit: 30 },
+        params: { limit: 30 },
       },
     )
 
@@ -93,7 +98,7 @@ describe('deleteItem function', () => {
     const { data: dataByOwnerIdAfter } = await axios.get(
       `${API_BASE_URL}/items/byOwner/${event.eventOwnerId}`,
       {
-        headers: { limit: 30 },
+        params: { limit: 30 },
       },
     )
 

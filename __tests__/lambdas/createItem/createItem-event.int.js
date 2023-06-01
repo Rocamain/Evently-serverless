@@ -5,7 +5,8 @@ describe('createItem function', () => {
     // GIVEN
 
     const headers = {
-      'Content-type': 'application/json; charset=UTF-8',
+      'Content-Type':
+        'multipart/form-data; boundary=--------------------------940071923899278094915217',
     }
 
     const body = {
@@ -15,6 +16,7 @@ describe('createItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 3',
       eventDescription: 'This is a description.',
+      eventCategory: 'other',
       eventLocation: 'Online',
       eventDate: '23-05-2023',
       eventTime: '12:55',
@@ -22,8 +24,17 @@ describe('createItem function', () => {
       eventLink: 'https://www.website.com',
     }
 
+    const form = new FormData()
+    form.append('data', JSON.stringify(body))
+
     // WHEN
-    const actual = await createItemLambda.handler({ body, headers })
+    const actual = await createItemLambda.handler({
+      event: {
+        body: Buffer.from(JSON.stringify(form)),
+        headers,
+      },
+    })
+
     console.log(actual)
   })
 })

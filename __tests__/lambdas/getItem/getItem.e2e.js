@@ -27,7 +27,9 @@ describe('getItem function', () => {
     }
 
     // WHEN
-    const { status, data } = await axios.post(`${API_BASE_URL}/item`, payload)
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
 
     const response = data.data
     event.data = response
@@ -74,10 +76,10 @@ describe('getItem function', () => {
     }
 
     // WHEN
-    const { status, data } = await axios.post(
-      `${API_BASE_URL}/item`,
-      payloadBooking,
-    )
+    const form = new FormData()
+    form.append('data', JSON.stringify(payloadBooking))
+
+    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
 
     booking.data = data.data
 
