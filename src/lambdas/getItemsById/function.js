@@ -10,10 +10,11 @@ const handler = async (event, context) => {
 
   const myEntityService = new EntityService()
 
-  const query = queryParser({
-    ...event.headers,
+  const queries = queryParser({
+    ...event.queryStringParameters,
   })
-  const response = await myEntityService.queryByGlobalIndex(id, query)
+
+  const response = await myEntityService.queryByGlobalIndex(id, queries)
 
   return {
     statusCode: 200,
