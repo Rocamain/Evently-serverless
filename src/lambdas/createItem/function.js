@@ -1,16 +1,33 @@
 const middy = require('@middy/core')
-const httpJsonBodyParser = require('@middy/http-json-body-parser')
 const httpErrorHandler = require('@middy/http-error-handler')
 const EntityService = require('../../common/service/entityService')
 const bodyValidation = require('../../common/middlewares/requestBodyValidator')
+const formDataParser = require('../../common/middlewares/formDataParser')
 const customErrors = require('../../common/middlewares/customError')
+const S3Service = require('../../common/service/s3Services')
+const generateId = require('../../common/entity/utils/generateId')
 
 const myEntityService = new EntityService()
 
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
 
-  const response = await myEntityService.create(event.body)
+  const { files, data } = event.body
+
+  if (data.type === 'event') {
+    data.id = generateId()
+  }
+  if (files.length) {
+    const s3Service = new S3Service()
+
+    const eventPhotos = await s3Service.saveFile({
+      files,
+      userId: data.id,
+    })
+    data.eventPhotos = eventPhotos
+  }
+
+  const response = await myEntityService.create(data)
 
   return {
     statusCode: 201,
@@ -23,9 +40,8 @@ const handler = async (event, context) => {
     body: JSON.stringify(response),
   }
 }
-
 module.exports.handler = middy()
-  .use(httpJsonBodyParser())
+  .use(formDataParser())
   .use(bodyValidation())
   .use(customErrors())
   .use(httpErrorHandler())
