@@ -12,7 +12,6 @@ module.exports = class EntityService {
   async create(requestBody) {
     if (requestBody.type === 'booking') {
       const { eventId, ...restRequestBody } = requestBody
-
       const eventInfo = await this.get(eventId, 'event')
 
       if (Object.keys(eventInfo.data).length) {
@@ -24,6 +23,7 @@ module.exports = class EntityService {
           eventTitle,
           eventCategory,
         } = eventInfo.data
+
         requestBody = {
           eventDateAndTime,
           eventOwnerId,
@@ -45,11 +45,11 @@ module.exports = class EntityService {
       `Creating entity item in repository on table ${process.env.tableName}`,
     )
 
-    const entityService = new Entity(requestBody).toItem()
+    const entityItem = new Entity(requestBody).toItem()
 
-    await this.dynamoDbAdapter.createItem(this.tableName, entityService)
+    await this.dynamoDbAdapter.createItem(this.tableName, entityItem)
 
-    return { data: Entity.fromItem(entityService) }
+    return { data: Entity.fromItem(entityItem) }
   }
 
   async get(id, userId) {
