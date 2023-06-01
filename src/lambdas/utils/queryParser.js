@@ -1,8 +1,7 @@
 const generateDate = require('../../common/entity/utils/generateDate')
 
-module.exports = (headers) => {
+module.exports = (params) => {
   const acceptedQueries = [
-    'pastBookings',
     'includePast',
     'exclusiveStartKey',
     'eventCategory',
@@ -14,14 +13,28 @@ module.exports = (headers) => {
   ]
 
   const query = {}
-  Object.keys(headers).forEach((key) => {
-    if (acceptedQueries.includes(key)) {
-      if (key === 'fromDate' || key === 'toDate') {
-        const date = JSON.parse(headers[key])
 
-        query[key] = generateDate(date, '00:00')
-      } else {
-        query[key] = JSON.parse(headers[key])
+  Object.keys(params).forEach((key) => {
+    if (acceptedQueries.includes(key)) {
+      switch (key) {
+        case 'fromDate':
+        case 'toDate': {
+          const date = params[key]
+          query[key] = generateDate(date, '00:00')
+          break
+        }
+        case 'limit':
+        case 'maxPrice':
+          query[key] = Number(params[key])
+          break
+        case 'exclusiveStartKey':
+          query[key] = JSON.parse(params[key])
+          break
+        case 'includePast':
+          query[key] = params[key] === 'true'
+          break
+        default:
+          query[key] = params[key]
       }
     }
   })
