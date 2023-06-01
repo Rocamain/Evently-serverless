@@ -31,7 +31,7 @@ module.exports = class DynamoDbAdapter {
           ? process.env.MOCK_DYNAMODB_ENDPOINT
           : 'http://127.0.0.1:8000',
         sslEnabled: false,
-        region: 'eu-west-2',
+        region: process.env.REGION,
         maxAttempts: 2,
 
         requestHandler: new NodeHttpHandler({
@@ -97,6 +97,7 @@ module.exports = class DynamoDbAdapter {
 
     const response = await this.get(params)
     console.log('Item retrieved successfully')
+
     return response.Item
   }
 
@@ -248,13 +249,10 @@ module.exports = class DynamoDbAdapter {
     if (filterExpression) {
       queryParams.FilterExpression = filterExpression
     }
-    try {
-      const response = await this.query(queryParams)
-      console.log('Items retrieved successfully')
-      return response
-    } catch (e) {
-      console.log(e)
-    }
+
+    const response = await this.query(queryParams)
+    console.log('Items retrieved successfully')
+    return response
   }
 
   async query(params) {

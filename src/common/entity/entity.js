@@ -2,38 +2,6 @@ const generateId = require('./utils/generateId')
 const generateDate = require('./utils/generateDate')
 const { stingFormatter } = require('./utils/stringFormatter')
 
-const EVENT_PROPERTIES = [
-  'id',
-  'createdAt',
-  'type',
-  'eventOwnerId',
-  'eventOwnerName',
-  'eventOwnerEmail',
-  'eventTitle',
-  'eventDescription',
-  'eventCategory',
-  'eventLocation',
-  'eventDateAndTime',
-  'eventPrice',
-  'eventLink',
-  'userId',
-]
-
-const BOOKING_PROPERTIES = [
-  'id',
-  'type',
-  'userId',
-  'userName',
-  'userEmail',
-  'eventId',
-  'eventDateAndTime',
-  'eventOwnerName',
-  'eventOwnerId',
-  'eventTitle',
-  'eventLocation',
-  'eventCategory',
-]
-
 module.exports = class Entity {
   constructor({
     createdAt = new Date(),
@@ -52,15 +20,15 @@ module.exports = class Entity {
     eventDateAndTime,
     eventLink,
     eventPrice,
+    eventPhotos,
     userId,
     userName,
     userEmail,
   }) {
-    this.createdAt =
-      createdAt instanceof Date
-        ? createdAt.toISOString()
-        : new Date(createdAt).toISOString()
-    this.id = id || generateId(createdAt)
+    this.id = id || generateId()
+    this.createdAt = createdAt
+      ? new Date(createdAt).toISOString()
+      : new Date().toISOString()
     this.type = stingFormatter(type)
     this.eventId = eventId
     this.eventOwnerId = eventOwnerId
@@ -75,6 +43,7 @@ module.exports = class Entity {
         ? generateDate(eventDate, eventTime)
         : eventDateAndTime
     this.eventLink = stingFormatter(eventLink)
+    this.eventPhotos = eventPhotos
     this.eventPrice = eventPrice
     this.userId = userId || type
     this.userName = userName
@@ -87,6 +56,7 @@ module.exports = class Entity {
 
     const entity = new Entity({ ...item })
     const entitySanitized = entity.sanitizeItem()
+
     if (entitySanitized) {
       const isEvent = item.type === 'event'
 
@@ -140,3 +110,37 @@ module.exports = class Entity {
     }
   }
 }
+
+const EVENT_PROPERTIES = [
+  'id',
+  'createdAt',
+  'type',
+  'eventOwnerId',
+  'eventOwnerName',
+  'eventOwnerEmail',
+  'eventTitle',
+  'eventDescription',
+  'eventCategory',
+  'eventLocation',
+  'eventDateAndTime',
+  'eventPrice',
+  'eventLink',
+  'eventPhotos',
+  'userId',
+]
+
+const BOOKING_PROPERTIES = [
+  'id',
+  'createdAt',
+  'type',
+  'userId',
+  'userName',
+  'userEmail',
+  'eventId',
+  'eventDateAndTime',
+  'eventOwnerName',
+  'eventOwnerId',
+  'eventTitle',
+  'eventLocation',
+  'eventCategory',
+]

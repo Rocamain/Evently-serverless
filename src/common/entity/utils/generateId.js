@@ -1,7 +1,8 @@
 const crypto = require('crypto')
 const KSUID = require('ksuid')
 
-module.exports = (createdAt) => {
+module.exports = () => {
+  const now = Date.now()
   const payload = crypto.randomBytes(16)
-  return `${KSUID.fromParts(createdAt.getTime(), payload).string}`
+  return `${KSUID.fromParts(now, payload).string}`
 }
