@@ -1,4 +1,5 @@
 const { default: axios } = require('axios')
+const FormData = require('form-data')
 
 // axios.defaults.baseURL = ``
 const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
@@ -27,7 +28,9 @@ describe('getItem function', () => {
     }
 
     // WHEN
-    const { status, data } = await axios.post(`${API_BASE_URL}/item`, payload)
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
 
     const response = data.data
     event.data = response
@@ -74,10 +77,10 @@ describe('getItem function', () => {
     }
 
     // WHEN
-    const { status, data } = await axios.post(
-      `${API_BASE_URL}/item`,
-      payloadBooking,
-    )
+    const form = new FormData()
+    form.append('data', JSON.stringify(payloadBooking))
+
+    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
 
     booking.data = data.data
 
