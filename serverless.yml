@@ -58,7 +58,7 @@ functions:
     handler: src/lambdas/savePhoto/function.handler
     description: save photo in s3
     memorySize: 256
-    timeout: 30
+    timeout: 20
     environment:
       BUCKET_NAME: ${self:custom.bucketName}
     events:
@@ -71,7 +71,7 @@ functions:
     handler: src/lambdas/createItem/function.handler
     description: Create Item in repository
     memorySize: 128
-    timeout: 30
+    timeout: 25
     environment:
       tableName: ${self:custom.tableName}
       BUCKET_NAME: ${self:custom.bucketName}
@@ -108,7 +108,7 @@ functions:
       handler: src/lambdas/getItemsById/function.handler
       description: Get Items from repository by eventOwner.
       memorySize: 128
-      timeout: 29
+      timeout: 10
       environment:
         tableName: ${self:custom.tableName}
         indexName: eventOwnerId
@@ -127,7 +127,7 @@ functions:
       handler: src/lambdas/getItemsById/function.handler
       description: Get Items from repository by eventOwner.
       memorySize: 128
-      timeout: 30
+      timeout: 10
       environment:
         tableName: ${self:custom.tableName}
         indexName: userId
