@@ -1,4 +1,5 @@
 const { default: axios } = require('axios')
+const FormData = require('form-data')
 
 // axios.defaults.baseURL = ``
 const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
