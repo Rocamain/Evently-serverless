@@ -23,8 +23,8 @@ describe('Integration Test for CRUD Operations on Service', () => {
 
     // THEN
     const createResult = await service.create(body)
-
     const [eventId, type] = createResult.data.eventId.split('-')
+
     const itemEventStoredInDb = await service.get(eventId, type)
 
     const itemEventDeleted = await service.delete(eventId, type)
