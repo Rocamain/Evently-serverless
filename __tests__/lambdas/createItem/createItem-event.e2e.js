@@ -1,4 +1,5 @@
 const { default: axios } = require('axios')
+const FormData = require('form-data')
 
 // axios.defaults.baseURL = ``
 const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
@@ -21,14 +22,16 @@ describe('createItem function', () => {
       eventPrice: 1,
       eventLink: 'https://website.com',
     }
-
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
     // WHEN
-    const { status, data } = await axios.post(`${API_BASE_URL}/item`, payload)
+    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
 
     const { eventId, createdAt, ...response } = data.data
     event.eventId = data.data.eventId.split('-')[0]
 
     // THEN
+
     expect(status).toBe(201)
     expect(new Date(createdAt)).toBeInstanceOf(Date)
     expect(createdAt).toBe(new Date(createdAt).toISOString())
@@ -47,7 +50,9 @@ describe('createItem function', () => {
     }
 
     // WHEN
-    const { status, data } = await axios.post(`${API_BASE_URL}/item`, payload)
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
 
     const { createdAt } = data.data
 
@@ -70,9 +75,13 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
+
     const { status, data } = response
 
     // THEN
@@ -98,8 +107,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -125,8 +137,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -152,8 +167,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -180,8 +198,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -207,8 +228,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -230,8 +254,11 @@ describe('createItem function', () => {
     const payload = {}
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -260,8 +287,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -292,8 +322,12 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
+
       .catch((err) => err)
     const { status, data } = response
 
@@ -323,8 +357,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -354,8 +391,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -385,8 +425,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -416,8 +459,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
@@ -447,8 +493,11 @@ describe('createItem function', () => {
     }
 
     // WHEN
+    const form = new FormData()
+    form.append('data', JSON.stringify(payload))
+
     const { response } = await axios
-      .post(`${API_BASE_URL}/item`, payload)
+      .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
     const { status, data } = response
 
