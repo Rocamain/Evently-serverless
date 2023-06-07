@@ -90,7 +90,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: 'Entry already exist',
-        name: 'Conditional check failed exception',
+        name: 'ConditionalCheckFailedException',
       },
     })
   })
@@ -121,7 +121,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: 'Event does not exist',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -151,7 +151,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: "must have required property 'type'.",
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -182,7 +182,7 @@ describe('createItem function', () => {
       error: {
         message:
           'type must be equal to one of the allowed values: event, booking.',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -212,7 +212,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: 'userId, must be string.',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -242,7 +242,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: 'eventId, must be string.',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -266,7 +266,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: "must have required property 'type'.",
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -300,7 +300,7 @@ describe('createItem function', () => {
       error: {
         message:
           'type must be equal to one of the allowed values: event, booking.',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -335,7 +335,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: 'eventOwnerId, must be string.',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -369,7 +369,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: 'must match format email.',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -403,7 +403,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: 'must match format DD-MM-YYYY.',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -437,7 +437,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: 'must match format HH:MM.',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -471,7 +471,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: 'eventPrice, must be number.',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })
@@ -505,7 +505,7 @@ describe('createItem function', () => {
     expect(data).toEqual({
       error: {
         message: 'eventPrice, must be number.',
-        name: 'Validation Exception',
+        name: 'ValidationException',
       },
     })
   })

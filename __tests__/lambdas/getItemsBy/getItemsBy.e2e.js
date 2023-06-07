@@ -70,7 +70,7 @@ describe('getItemBy function', () => {
         eventLink: 'https://website.com/Event_3',
       }
       // WHEN
-      console.log(JSON.stringify(payloadEventFour))
+
       const formOne = new FormData()
       formOne.append('data', JSON.stringify(payloadEventOne))
 
@@ -145,19 +145,25 @@ describe('getItemBy function', () => {
       // WHEN
 
       const { status: statusByOwnerIdOne, data: dataByOwnerIdOne } =
-        await axios.get(`${API_BASE_URL}/items/byOwner/1`, {
+        await axios.get(`${API_BASE_URL}/items/byOwner/1/`, {
           params: {
             limit: 1,
           },
         })
 
-      const { lastEvaluatedKey, data: dataOne } = dataByOwnerIdOne
+      const {
+        lastEvaluatedKey: { eventOwnerId, PK, userId, eventDateAndTime },
+        data: dataOne,
+      } = dataByOwnerIdOne
 
       const { status: statusByOwnerIdTwo, data: dataByOwnerIdTwo } =
         await axios.get(`${API_BASE_URL}/items/byOwner/1`, {
           params: {
             limit: 4,
-            exclusiveStartKey: JSON.stringify(lastEvaluatedKey),
+            lastPK: PK,
+            lastEventOwnerId: eventOwnerId,
+            lastUserId: userId,
+            lastEventDateAndTime: eventDateAndTime,
           },
         })
 
@@ -187,7 +193,7 @@ describe('getItemBy function', () => {
         eventPrice: 1,
         eventLink: 'https://website.com/Event_1',
       }
-      console.log(JSON.stringify(payloadEventFive))
+
       // WHEN
 
       const formEventFive = new FormData()
@@ -200,15 +206,11 @@ describe('getItemBy function', () => {
 
       pastBookingToBookOne.data = dataFive.data
       const { status: statusByOwnerIdOnePast, data: dataByOwnerIdOnePast } =
-        await axios.get(
-          `${API_BASE_URL}/items/byOwner/1
-          `,
-          {
-            params: {
-              includePast: true,
-            },
+        await axios.get(`${API_BASE_URL}/items/byOwner/1`, {
+          params: {
+            includePast: true,
           },
-        )
+        })
 
       const { status: statusByOwnerIdOne, data: dataByOwnerIdOne } =
         await axios.get(`${API_BASE_URL}/items/byOwner/1`, {
@@ -216,7 +218,6 @@ describe('getItemBy function', () => {
             includePast: false,
           },
         })
-
       // THEN
       expect(statusFive).toBe(201)
       expect(statusByOwnerIdOne).toBe(200)
@@ -242,10 +243,10 @@ describe('getItemBy function', () => {
       expect(dataByOwnerIdNotExist.data).toEqual([])
     })
 
-    test('should respond with statusCode 200 to correct request by fromDate and toDate queries and By ownerId', async () => {
+    test('should respond with statusCode 200 to correct request with query params fromDate, toDate and includePast By ownerId', async () => {
       // WHEN
 
-      const { status, data: dataByOwnerIdFromDaTe } = await axios.get(
+      const { status, data: dataByOwnerIdFromDate } = await axios.get(
         `${API_BASE_URL}/items/byOwner/1
           `,
         {
@@ -255,24 +256,153 @@ describe('getItemBy function', () => {
         },
       )
 
-      // const { data: dataByOwnerIdFromDaTeToDate } = await axios.get(
-      //   `${API_BASE_URL}/items/byOwner/1
-      //     `,
-      //   {
-      //     params: {
-      //       fromDate: '25-05-2030',
-      //       toDate: '26-05-2030',
-      //     },
-      //   },
-      // )
+      const { data: dataByOwnerIdFromDateToDate } = await axios.get(
+        `${API_BASE_URL}/items/byOwner/1
+          `,
+        {
+          params: {
+            fromDate: '25-05-2030',
+            toDate: '28-05-2030',
+          },
+        },
+      )
 
-      // console.log(dataByOwnerIdFromDaTeToDate)
+      const { data: dataByOwnerIdToDate } = await axios.get(
+        `${API_BASE_URL}/items/byOwner/1
+          `,
+        {
+          params: {
+            toDate: '27-05-2030',
+          },
+        },
+      )
+      const { data: dataByOwnerIdToDateWithPast } = await axios.get(
+        `${API_BASE_URL}/items/byOwner/1
+          `,
+        {
+          params: {
+            toDate: '27-05-2030',
+            includePast: true,
+          },
+        },
+      )
+
       // THEN
       expect(status).toBe(200)
-      expect(dataByOwnerIdFromDaTe.data.length).toBe(2)
-      // expect(dataByOwnerIdFromDaTeToDate.data.length).toBe(1)
+      expect(dataByOwnerIdFromDate.data.length).toBe(2)
+      expect(dataByOwnerIdFromDateToDate.data.length).toBe(1)
+      expect(dataByOwnerIdToDate.data.length).toBe(1)
+      expect(dataByOwnerIdToDateWithPast.data.length).toBe(2)
     })
-    //
+
+    test('should respond with statusCode 400 to incorrect request with query params fromDate wrong format', async () => {
+      // WHEN
+
+      const { response } = await axios
+        .get(
+          `${API_BASE_URL}/items/byOwner/1
+          `,
+          {
+            params: {
+              fromDate: 'a',
+              includePast: true,
+            },
+          },
+        )
+        .catch((err) => err)
+      const { status, data } = response
+
+      // THEN
+      expect(status).toBe(400)
+      expect(data.error.name).toBe('ValidationException')
+      expect(data.error.message).toBe('must match format DD-MM-YYYY.')
+    })
+    test('should respond with statusCode 400 to incorrect request with query params includePast wrong format', async () => {
+      // WHEN
+
+      const { response } = await axios
+        .get(
+          `${API_BASE_URL}/items/byOwner/1
+          `,
+          {
+            params: {
+              includePast: 'yeah',
+            },
+          },
+        )
+        .catch((err) => err)
+      const { status, data } = response
+
+      // THEN
+      expect(status).toBe(400)
+      expect(data.error.name).toBe('ValidationException')
+      expect(data.error.message).toBe('must match format boolean.')
+    })
+    test('should respond with statusCode 400 to incorrect request with query params lastEventDateAndTime wrong format', async () => {
+      // WHEN
+
+      const { response } = await axios
+        .get(
+          `${API_BASE_URL}/items/byOwner/1
+          `,
+          {
+            params: {
+              lastEventDateAndTime: 'yeah',
+            },
+          },
+        )
+        .catch((err) => err)
+      const { status, data } = response
+
+      // THEN
+      expect(status).toBe(400)
+      expect(data.error.name).toBe('ValidationException')
+      expect(data.error.message).toBe('must match format ISO8601.')
+    })
+    test('should respond with statusCode 400 to incorrect request with query params lastEventDateAndTime with missing params', async () => {
+      // WHEN
+
+      const { response } = await axios
+        .get(
+          `${API_BASE_URL}/items/byOwner/1
+          `,
+          {
+            params: {
+              lastEventDateAndTime: '2025-03-25T12:55:00.000Z',
+            },
+          },
+        )
+        .catch((err) => err)
+      const { status, data } = response
+
+      // THEN
+      expect(status).toBe(400)
+      expect(data.error.name).toBe('ValidationException')
+      expect(data.error.message).toBe(
+        "Exclusive Start Key must have same size as table's key schema",
+      )
+    })
+    test('should respond with statusCode 400 to incorrect request with query params limit wrong format', async () => {
+      // WHEN
+
+      const { response } = await axios
+        .get(
+          `${API_BASE_URL}/items/byOwner/1
+          `,
+          {
+            params: {
+              limit: 'two',
+            },
+          },
+        )
+        .catch((err) => err)
+      const { status, data } = response
+
+      // THEN
+      expect(status).toBe(400)
+      expect(data.error.name).toBe('ValidationException')
+      expect(data.error.message).toBe('must match format positive integer.')
+    })
   })
   describe('getItemBy userId', () => {
     // FIRST WE CREATE SOME ITEMS TO LATER DO A GET REQUEST
