@@ -37,7 +37,7 @@ module.exports = class EntityService {
       } else {
         const error = new Error()
         error.message = 'Event does not exist'
-        error.name = 'Validation Exception'
+        error.name = 'ValidationException'
         throw error
       }
     }

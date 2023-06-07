@@ -17,12 +17,13 @@ const handler = async (event, context) => {
   if (data.type === 'event') {
     data.id = generateId()
   }
+
   if (files.length) {
     const s3Service = new S3Service()
 
     const eventPhotos = await s3Service.saveFile({
       files,
-      userId: data.id,
+      id: data.id,
     })
     data.eventPhotos = eventPhotos
   }

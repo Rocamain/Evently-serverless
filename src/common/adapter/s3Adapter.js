@@ -8,7 +8,7 @@ module.exports = class S3Adapter {
     this.client = new S3Client({ region: process.env.REGION })
   }
 
-  async save(Bucket, { file, userId }) {
+  async save(Bucket, { file, id }) {
     const width = 600
 
     try {
@@ -19,7 +19,7 @@ module.exports = class S3Adapter {
         .toFormat('webp')
         .toBuffer()
 
-      const Key = `${userId}/${filename}.webp`
+      const Key = `${id}/${filename}.webp`
 
       const command = new PutObjectCommand({
         Bucket,

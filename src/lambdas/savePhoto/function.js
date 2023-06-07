@@ -1,18 +1,18 @@
 const parser = require('lambda-multipart-parser')
 const S3Service = require('../../common/service/s3Services')
+const middy = require('@middy/core')
+const httpErrorHandler = require('@middy/http-error-handler')
+const customErrors = require('../../common/middlewares/customError')
 
 const handler = async (event, context) => {
-  try {
-    const { files, userId } = await parser.parse(event)
-    const s3Service = new S3Service()
+  const { files, id } = await parser.parse(event)
+  const s3Service = new S3Service()
 
-    const filesData = await s3Service.saveFile({ files, userId })
+  const filesData = await s3Service.saveFile({ files, id })
 
-    return filesData
-  } catch (err) {
-    console.log('lambda', { err })
-    return err
-  }
+  return filesData
 }
 
-module.exports.handler = handler
+module.exports.handler = middy(handler)
+  .use(customErrors())
+  .use(httpErrorHandler())
