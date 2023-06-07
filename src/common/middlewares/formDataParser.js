@@ -1,4 +1,5 @@
 const parser = require('lambda-multipart-parser')
+
 function formDataParser() {
   const formDataParserBefore = async ({ event, context }) => {
     try {
@@ -12,7 +13,7 @@ function formDataParser() {
       error.name = 'Parsing Exception'
       error.message = 'Error on parsing'
 
-      return { statusCode: 400, body: JSON.stringify({ error }) }
+      throw error
     }
   }
 
