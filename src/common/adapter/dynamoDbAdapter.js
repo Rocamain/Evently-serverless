@@ -43,7 +43,7 @@ module.exports = class DynamoDbAdapter {
       // Endpoint is empty when running in AWS
       if (IS_PRODUCTION_CONFIG) {
         return this.documentDbClient({
-          region: 'eu-west-2',
+          region: process.env.REGION,
           requestHandler: new NodeHttpHandler({
             httpsAgent: new https.Agent({
               maxSockets: 30,
@@ -249,7 +249,7 @@ module.exports = class DynamoDbAdapter {
     if (filterExpression) {
       queryParams.FilterExpression = filterExpression
     }
-
+    console.log('ADDDED', { queryParams })
     const response = await this.query(queryParams)
     console.log('Items retrieved successfully')
     return response

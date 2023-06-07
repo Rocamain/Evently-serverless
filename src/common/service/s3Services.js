@@ -7,10 +7,10 @@ module.exports = class S3Service {
     this.Bucket = BUCKET_NAME
   }
 
-  async saveFile({ files, userId }) {
+  async saveFile({ files, id }) {
     try {
       const response = await Promise.all(
-        files.map((file) => this.S3Adapter.save(this.Bucket, { file, userId })),
+        files.map((file) => this.S3Adapter.save(this.Bucket, { file, id })),
       )
 
       return response

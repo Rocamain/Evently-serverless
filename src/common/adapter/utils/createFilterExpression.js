@@ -32,17 +32,27 @@ module.exports = ({
     expressionAttributeValues[':value2'] = new Date(
       new Date(fromDate).getTime() + FIVE_MINUTES,
     ).toISOString()
+
     if (toDate) {
-      if (includePast) {
-        delete expressionAttributeNames['#field2']
-        delete expressionAttributeValues[':value2']
-      }
       delete expressionAttributeNames['#field2']
       delete expressionAttributeValues[':value2']
       expression =
         '#field = :value AND eventDateAndTime BETWEEN :fromDate AND :toDate'
       expressionAttributeValues[':fromDate'] = fromDate
       expressionAttributeValues[':toDate'] = toDate
+    }
+  }
+
+  if (!fromDate && toDate) {
+    expression = '#field = :value AND #field2 BETWEEN :fromDate AND :value2'
+
+    expressionAttributeValues[':fromDate'] = new Date(
+      new Date().getTime() + FIVE_MINUTES,
+    ).toISOString()
+    expressionAttributeValues[':value2'] = toDate
+    if (includePast) {
+      delete expressionAttributeValues[':fromDate']
+      expression = '#field = :value AND eventDateAndTime <= :value2'
     }
   }
 

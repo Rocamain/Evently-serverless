@@ -28,11 +28,11 @@ custom:
   
   serverless-offline:
     host: 'localhost'
-    httpPort: 3000
-    lambdaPort: 3001
+    httpPort: 4000
+    lambdaPort: 4001
     allowCache: true
     noPrependStageInUrl: true
-    port: 3000 
+    port: 4000 
 
   dynamodb:
     stages:

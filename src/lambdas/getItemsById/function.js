@@ -1,8 +1,10 @@
 const middy = require('@middy/core')
 const httpJsonBodyParser = require('@middy/http-json-body-parser')
 const httpErrorHandler = require('@middy/http-error-handler')
+const customErrors = require('../../common/middlewares/customError')
 const EntityService = require('../../common/service/entityService')
 const queryParser = require('../utils/queryParser')
+const paramsValidator = require('../../common/middlewares/paramsValidator')
 
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
@@ -27,6 +29,9 @@ const handler = async (event, context) => {
     body: response,
   }
 }
-module.exports.handler = middy(handler)
+module.exports.handler = middy()
+  .use(paramsValidator())
   .use(httpJsonBodyParser())
+  .use(customErrors())
   .use(httpErrorHandler())
+  .handler(handler)

@@ -29,7 +29,7 @@ module.exports = {
 }
 
 config({
-  path: resolve(__dirname, '../../.awsenv'),
+  path: resolve(__dirname, '../../.aws.env'),
   bail: 1,
   testEnvironment: 'node',
 })

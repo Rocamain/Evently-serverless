@@ -1,6 +1,10 @@
 const generateId = require('./utils/generateId')
 const generateDate = require('./utils/generateDate')
 const { stingFormatter } = require('./utils/stringFormatter')
+const {
+  ENTITY_EVENT_PROPERTIES,
+  ENTITY_BOOKING_PROPERTIES,
+} = require('../../constants/constants')
 
 module.exports = class Entity {
   constructor({
@@ -90,7 +94,7 @@ module.exports = class Entity {
       case 'event': {
         const sanitizeEventItem = {}
 
-        EVENT_PROPERTIES.forEach((property) => {
+        ENTITY_EVENT_PROPERTIES.forEach((property) => {
           property === 'id'
             ? (sanitizeEventItem.PK = this.id)
             : (sanitizeEventItem[property] = this[property])
@@ -100,7 +104,7 @@ module.exports = class Entity {
       }
       case 'booking': {
         const sanitizeEventItem = {}
-        BOOKING_PROPERTIES.forEach((property) => {
+        ENTITY_BOOKING_PROPERTIES.forEach((property) => {
           property === 'id'
             ? (sanitizeEventItem.PK = this.eventId)
             : (sanitizeEventItem[property] = this[property])
@@ -110,37 +114,3 @@ module.exports = class Entity {
     }
   }
 }
-
-const EVENT_PROPERTIES = [
-  'id',
-  'createdAt',
-  'type',
-  'eventOwnerId',
-  'eventOwnerName',
-  'eventOwnerEmail',
-  'eventTitle',
-  'eventDescription',
-  'eventCategory',
-  'eventLocation',
-  'eventDateAndTime',
-  'eventPrice',
-  'eventLink',
-  'eventPhotos',
-  'userId',
-]
-
-const BOOKING_PROPERTIES = [
-  'id',
-  'createdAt',
-  'type',
-  'userId',
-  'userName',
-  'userEmail',
-  'eventId',
-  'eventDateAndTime',
-  'eventOwnerName',
-  'eventOwnerId',
-  'eventTitle',
-  'eventLocation',
-  'eventCategory',
-]

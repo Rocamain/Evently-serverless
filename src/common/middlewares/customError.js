@@ -1,18 +1,26 @@
 const customErrors = () => {
-  const customErrors = async ({ error }) => {
+  const createErrorResponse = async ({ error }) => {
     if (error) {
       if (error.name === 'ConditionalCheckFailedException') {
-        error = {}
-        error.name = 'Conditional check failed exception'
         error.message = 'Entry already exist'
       }
-      return { statusCode: 400, body: JSON.stringify({ error }) }
+
+      const errorResponse = new ErrorResponse(error)
+
+      return errorResponse
     }
   }
 
   return {
-    onError: customErrors,
+    onError: createErrorResponse,
   }
 }
 
 module.exports = customErrors
+
+class ErrorResponse {
+  constructor({ name, message }) {
+    this.statusCode = 400
+    this.body = JSON.stringify({ error: { name, message } })
+  }
+}

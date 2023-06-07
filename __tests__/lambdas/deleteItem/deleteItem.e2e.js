@@ -82,7 +82,7 @@ describe('deleteItem function', () => {
       expect(bookingId).toBe(`${eventId}-${userId}`)
     })
   })
-  test('should pass', async () => {
+  test('should pass with statuscode 203 for a delete request of booking and 203 deleteBatch of an event and all bookings of that event ', async () => {
     // WHEN
 
     const { data: dataByOwnerId } = await axios.get(
