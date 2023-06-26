@@ -6,7 +6,7 @@ const paramsValidator = () => {
     const data = event.queryStringParameters
 
     const schema = getSchema('query')
-    const isByUser = event.path.includes('byUser')
+    const isByUser = event.rawPath.includes('byUser')
 
     if (isByUser) {
       delete schema.lastEventOwnerId
