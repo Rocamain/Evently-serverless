@@ -16,12 +16,14 @@ const createErrorMsg = ({
       return `${field} ${message}: ${enumValues}.`
     case 'type':
       return `${field}, ${message}.`
+    case 'minimum':
+      return `${field}, ${message}.`
     case 'format':
       return `${message.replaceAll('"', '')}.`
     case 'additionalProperties':
       return `${message}.`
     default:
-      console.log(`Sorry, we are out of errors.`)
+      return `${field}, ${message}.`
   }
 }
 
