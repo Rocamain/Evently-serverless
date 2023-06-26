@@ -32,22 +32,22 @@ const QUERY_PARAMS = [
 ]
 
 const EVENT_CATEGORIES = [
-  'social',
-  'tech',
-  'cooking',
-  'sports',
-  'games',
-  'professional',
-  'religious',
-  'other',
-  'travel',
+  'Social',
+  'Tech',
+  'Cooking',
+  'Sports',
+  'Games',
+  'Professional',
+  'Religious',
+  'Other',
+  'Travel',
 ]
 
 module.exports = {
   TIME_REGEX: /^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]/,
   DATE_REGEX:
     /^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})/,
-  PRICE_REGEX: /^(0|[1-9]\d*)$/,
+
   ISO_DATE_REGEX: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
 
   ENTITY_EVENT_PROPERTIES: [
@@ -86,11 +86,11 @@ module.exports = {
     properties: {
       includePast: { type: 'string', format: 'boolean' },
       eventCategory: { type: 'string', enum: EVENT_CATEGORIES },
-      limit: { type: 'string', format: 'positive integer' },
+      limit: { type: 'number' || 'string' },
       fromDate: { type: 'string', format: 'DD-MM-YYYY' },
       toDate: { type: 'string', format: 'DD-MM-YYYY' },
       searchWords: { type: 'string' },
-      maxPrice: { type: 'number', format: 'positive integer' },
+      maxPrice: { type: 'number' },
       lastPK: { type: 'string' },
       lastEventDateAndTime: { type: 'string', format: 'ISO8601' },
       lastUserId: { type: 'string' },
@@ -115,7 +115,7 @@ module.exports = {
       },
       eventDate: { type: 'string', format: 'DD-MM-YYYY' },
       eventTime: { type: 'string', format: 'HH:MM' },
-      eventPrice: { type: 'number', format: 'positive integer' },
+      eventPrice: { type: 'number', minimum: 0 },
       eventLink: { type: 'string', format: 'uri' },
     },
     required: BODY_EVENT_PROPERTIES,

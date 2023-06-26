@@ -6,7 +6,6 @@ plugins:
   - '@khasty720/serverless-dynamodb-local'
   - serverless-offline
   - serverless-export-env
-
 provider:
   name: aws
   region: eu-west-2
@@ -18,8 +17,10 @@ provider:
     SERVICE: ${self:service}
        # your variables - optional
     httpApiGatewayEndpointId: !Ref HttpApi
-    
-    
+  httpApi:
+    cors: true
+
+
 custom:
   tableName: ${self:service}-${self:provider.stage}
   description: Evently. The apps for events
@@ -56,7 +57,7 @@ functions:
   savePhoto:
     name: ${self:service}-${self:provider.stage}-save-photo
     handler: src/lambdas/savePhoto/function.handler
-    description: save photo in s3
+    description: Save photo in s3
     memorySize: 256
     timeout: 20
     environment:
@@ -95,8 +96,8 @@ functions:
     environment:
       tableName: ${self:custom.tableName}
     events:
-      - http:
-          path: item/{id}
+      - httpApi:
+          path: /item/{id}
           method: GET
     iamRoleStatements:
       - Effect: 'Allow'
@@ -114,8 +115,8 @@ functions:
         indexName: eventOwnerId
         field: eventOwnerId
       events:
-        - http:
-            path: items/byOwner/{id}
+        - httpApi:
+            path: /items/byOwner/{id}
             method: GET
       iamRoleStatements:
         - Effect: 'Allow'
@@ -133,8 +134,8 @@ functions:
         indexName: userId
         field: userId
       events:
-        - http:
-            path: items/byUser/{id}
+        - httpApi:
+            path: /items/byUser/{id}
             method: GET
       iamRoleStatements:
         - Effect: 'Allow'
@@ -150,8 +151,8 @@ functions:
       environment:
         tableName: ${self:custom.tableName}
       events:
-        - http:
-            path: item/{id}
+        - httpApi:
+            path: /item/{id}
             method: DELETE
       iamRoleStatements:
         - Effect: 'Allow'

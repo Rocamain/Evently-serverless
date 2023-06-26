@@ -19,7 +19,7 @@ describe('getItemBy function', () => {
         eventOwnerEmail: 'javier@fakeemail.com',
         eventTitle: 'Event 1',
         eventDescription: 'This is a description.',
-        eventCategory: 'other',
+        eventCategory: 'Other',
         eventLocation: 'Online',
         eventDate: '23-05-2030',
         eventTime: '12:55',
@@ -31,7 +31,7 @@ describe('getItemBy function', () => {
         eventOwnerId: '1',
         eventOwnerName: 'Javier Roca',
         eventOwnerEmail: 'javier@fakeemail.com',
-        eventCategory: 'other',
+        eventCategory: 'Other',
         eventTitle: 'Event 2',
         eventDescription: 'This is a description.',
         eventLocation: 'Online',
@@ -47,7 +47,7 @@ describe('getItemBy function', () => {
         eventOwnerEmail: 'francisco@fakeemail.com',
         eventTitle: 'Event 3',
         eventDescription: 'This is a description.',
-        eventCategory: 'other',
+        eventCategory: 'Other',
         eventLocation: 'Online',
         eventDate: '25-05-2030',
         eventTime: '12:55',
@@ -62,7 +62,7 @@ describe('getItemBy function', () => {
         eventOwnerEmail: 'javier@fakeemail.com',
         eventTitle: 'Event 3',
         eventDescription: 'This is a description.',
-        eventCategory: 'other',
+        eventCategory: 'Other',
         eventLocation: 'Online',
         eventDate: '28-05-2030',
         eventTime: '12:55',
@@ -111,6 +111,7 @@ describe('getItemBy function', () => {
         await axios.get(
           `${API_BASE_URL}/items/byOwner/${payloadEventOne.eventOwnerId}`,
         )
+
       const { status: statusByOwnerIdTwo, data: dataByOwnerIdTwo } =
         await axios.get(
           `${API_BASE_URL}/items/byOwner/${payloadEventThree.eventOwnerId}`,
@@ -186,7 +187,7 @@ describe('getItemBy function', () => {
         eventOwnerEmail: 'javier@fakeemail.com',
         eventTitle: 'Event 1',
         eventDescription: 'This is a description.',
-        eventCategory: 'travel',
+        eventCategory: 'Travel',
         eventLocation: 'Online',
         eventDate: '23-05-2012',
         eventTime: '12:55',
@@ -401,7 +402,7 @@ describe('getItemBy function', () => {
       // THEN
       expect(status).toBe(400)
       expect(data.error.name).toBe('ValidationException')
-      expect(data.error.message).toBe('must match format positive integer.')
+      expect(data.error.message).toBe('limit, must be number.')
     })
   })
   describe('getItemBy userId', () => {
