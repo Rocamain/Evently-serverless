@@ -17,7 +17,7 @@ describe('deleteItem function', () => {
       eventOwnerEmail: 'javier@fakeemail.com',
       eventTitle: 'Event 1',
       eventDescription: 'This is a description.',
-      eventCategory: 'other',
+      eventCategory: 'Other',
       eventLocation: 'Online',
       eventDate: '23-05-2030',
       eventTime: '12:55',
