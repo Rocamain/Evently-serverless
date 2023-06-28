@@ -15,7 +15,6 @@ provider:
     REGION: ${self:provider.region}
     STAGE: ${self:provider.stage}
     SERVICE: ${self:service}
-       # your variables - optional
     httpApiGatewayEndpointId: !Ref HttpApi
   httpApi:
     cors: true
@@ -52,8 +51,42 @@ custom:
           Action:
           - "s3:*"
           Resource: "arn:aws:s3:::${self:service}-public-photos-${sls:stage}" 
+        - Effect: Allow
+          Action:
+          - "cognito-idp:AdminInitiateAuth"
+          - "cognito-idp:AdminCreateUser"
+          - "cognito-idp:AdminSetUserPassword"
+          Resource: "*" 
         
 functions:
+
+  join: 
+    name: ${self:service}-${self:provider.stage}-join
+    handler: src/lambdas/join/function.handler
+    description: register to ${self:service}-${self:provider.stage}
+    memorySize: 128
+    events:
+      - httpApi:
+          method: POST
+          path: /join
+    environment:
+      USER_POOL_ID:
+        Ref: UserPool
+  login: 
+    name: ${self:service}-${self:provider.stage}-join
+    handler: src/lambdas/login/function.handler
+    description: register to ${self:service}-${self:provider.stage}
+    memorySize: 128
+    events:
+      - httpApi:
+          method: POST
+          path: /login
+    environment:
+      USER_POOL_ID:
+        Ref: UserPool
+      CLIENT_ID: 
+        Ref: UserPoolClient  
+
   savePhoto:
     name: ${self:service}-${self:provider.stage}-save-photo
     handler: src/lambdas/savePhoto/function.handler
@@ -175,6 +208,43 @@ resources:
   Description: ${self:custom.description}    
 
   Resources:
+
+    UserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName:  ${self:service}-${sls:stage}-UserPool
+        AccountRecoverySetting: 
+          RecoveryMechanisms: 
+            - Name: verified_email
+              Priority: 1
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email            
+        Schema:
+          - Name: "family_name"
+            Required: true
+            Mutable: true
+          - Name: "name"
+            Required: true
+            Mutable: true
+        Policies:
+            PasswordPolicy:
+              MinimumLength: 8
+        
+
+    UserPoolClient:
+      Type : "AWS::Cognito::UserPoolClient"
+      Properties:
+        ClientName:  ${self:service}-${sls:stage}-UserPoolClient
+        UserPoolId: 
+          Ref: UserPool
+        AccessTokenValidity: 10
+        IdTokenValidity: 10
+        ExplicitAuthFlows:
+          - "ADMIN_NO_SRP_AUTH"
+
+
     eventlyTable:
       Type: AWS::DynamoDB::Table
       Properties:
