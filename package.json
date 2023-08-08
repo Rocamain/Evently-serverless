@@ -30,7 +30,6 @@
     "@aws-sdk/client-dynamodb": "^3.312.0",
     "@aws-sdk/lib-dynamodb": "^3.312.0",
     "@aws-sdk/node-http-handler": "^3.310.0",
-    "@khasty720/serverless-dynamodb-local": "^0.2.41",
     "axios": "^1.4.0",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
@@ -44,7 +43,8 @@
     "jest-dynalite": "^3.6.1",
     "kill-port": "^2.0.1",
     "prettier": "^2.8.7",
-    "serverless": "^3.34.0",
+    "serverless": "^3.32.2",
+    "serverless-dynamodb": "^0.2.43",
     "serverless-export-env": "^2.2.0",
     "serverless-iam-roles-per-function": "^3.2.0",
     "serverless-offline": "^12.0.4"

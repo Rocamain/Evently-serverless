@@ -14,6 +14,8 @@ const getUniqueCombinations = require('./utils/getUniqueCombinations')
 
 module.exports = class DynamoDbAdapter {
   constructor() {
+    // CONNECTION METHODS
+
     this.documentDbClient = (client) => {
       return DynamoDBDocument.from(new DynamoDB(client), {
         marshallOptions: {
@@ -21,42 +23,48 @@ module.exports = class DynamoDbAdapter {
         },
       })
     }
+
     this.getClient = () => {
       console.log('DynamoDB creating connection')
 
-      const IS_PRODUCTION_CONFIG = process.env.STAGE === 'prod'
-
-      const config = {
-        endpoint: process.env.MOCK_DYNAMODB_ENDPOINT
-          ? process.env.MOCK_DYNAMODB_ENDPOINT
-          : 'http://127.0.0.1:8000',
-        sslEnabled: false,
-        region: process.env.REGION,
-        maxAttempts: 2,
-
-        requestHandler: new NodeHttpHandler({
-          socketTimeout: 1000,
-          connectionTimeout: 1000,
-        }),
-      }
-
-      // Endpoint is empty when running in AWS
-      if (IS_PRODUCTION_CONFIG) {
-        return this.documentDbClient({
-          region: process.env.REGION,
-          requestHandler: new NodeHttpHandler({
-            httpsAgent: new https.Agent({
-              maxSockets: 30,
-              keepAlive: true,
-            }),
-          }),
-        })
-      }
+      const config = this.getConfig()
 
       return this.documentDbClient(config)
     }
+
+    this.getConfig = () => {
+      const IS_PRODUCTION_CONFIG = process.env.STAGE === 'prod'
+
+      const localConfig = {
+        region: 'localhost',
+        endpoint: 'http://0.0.0.0:8000',
+        credentials: {
+          accessKeyId: 'MockAccessKeyId',
+          secretAccessKey: 'MockSecretAccessKey',
+        },
+      }
+
+      const productionConfig = {
+        region: process.env.REGION,
+        requestHandler: new NodeHttpHandler({
+          httpsAgent: new https.Agent({
+            maxSockets: 30,
+            keepAlive: true,
+          }),
+        }),
+      }
+
+      const config = IS_PRODUCTION_CONFIG ? productionConfig : localConfig
+
+      return config
+    }
+
+    //  CONNECTION
+
     this.documentClient = this.getClient()
   }
+
+  // CRUD METHODS
 
   async createItem(tableName, entity) {
     console.log(`Saving new item into DynamoDB table ${tableName}`)

@@ -3,8 +3,8 @@ frameworkVersion: '3'
 
 plugins:
   - serverless-iam-roles-per-function
-  - '@khasty720/serverless-dynamodb-local'
   - serverless-offline
+  - serverless-dynamodb
   - serverless-export-env
 provider:
   name: aws
@@ -25,7 +25,7 @@ custom:
   description: Evently. The apps for events
   default_stage: local
   bucketName: ${self:service}-public-photos-${sls:stage}
-  
+    
   serverless-offline:
     host: 'localhost'
     httpPort: 4000
@@ -34,11 +34,10 @@ custom:
     noPrependStageInUrl: true
     port: 4000 
 
-  dynamodb:
+  serverless-dynamodb:
     stages:
       - local
     start:
-      host: 127.0.0.1
       port: 8000
       heapInitial: 200m
       heapMax: 1g
