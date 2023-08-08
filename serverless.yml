@@ -73,7 +73,7 @@ functions:
       USER_POOL_ID:
         Ref: UserPool
   login: 
-    name: ${self:service}-${self:provider.stage}-join
+    name: ${self:service}-${self:provider.stage}-login
     handler: src/lambdas/login/function.handler
     description: register to ${self:service}-${self:provider.stage}
     memorySize: 128
