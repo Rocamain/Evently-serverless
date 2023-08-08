@@ -49,6 +49,8 @@ module.exports = class EntityService {
 
     await this.dynamoDbAdapter.createItem(this.tableName, entityItem)
 
+    console.log('item created')
+
     return { data: Entity.fromItem(entityItem) }
   }
 

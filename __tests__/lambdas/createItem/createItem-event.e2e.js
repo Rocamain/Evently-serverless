@@ -30,12 +30,18 @@ describe('createItem function', () => {
     const { eventId, createdAt, ...response } = data.data
     event.eventId = data.data.eventId.split('-')[0]
 
+    payload.eventPhotos = []
+    console.log('AAAAAA', new Date())
+    delete payload.eventDateAndTime
+
+    delete payload.eventDate
+    delete payload.eventTime
     // THEN
 
     expect(status).toBe(201)
     expect(new Date(createdAt)).toBeInstanceOf(Date)
     expect(createdAt).toBe(new Date(createdAt).toISOString())
-    expect(response).toEqual(response)
+    expect(response).toEqual(payload)
     expect(eventId).toContain('-event')
   })
   test('should respond with statusCode 201 to correct request item Booking', async () => {
