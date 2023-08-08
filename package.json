@@ -44,7 +44,7 @@
     "jest-dynalite": "^3.6.1",
     "kill-port": "^2.0.1",
     "prettier": "^2.8.7",
-    "serverless": "^3.32.2",
+    "serverless": "^3.34.0",
     "serverless-export-env": "^2.2.0",
     "serverless-iam-roles-per-function": "^3.2.0",
     "serverless-offline": "^12.0.4"
