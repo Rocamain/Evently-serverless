@@ -8,15 +8,55 @@ module.exports = class S3Service {
   }
 
   async saveFile({ files, id }) {
-    try {
-      const response = await Promise.all(
-        files.map((file) => this.S3Adapter.save(this.Bucket, { file, id })),
-      )
-
-      return response
-    } catch (error) {
-      console.log('service', error)
-      return { error }
+    const { IS_OFFLINE } = process.env
+    // due to limitation of number of requests to AWS, on development will not make a call to the service
+    if (files.length === 0 && !IS_OFFLINE) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST',
+          'Access-Control-Allow-Credentials': true,
+        },
+        body: JSON.stringify({
+          msg: 'photo file is required',
+        }),
+      }
     }
+
+    if (!id) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST',
+          'Access-Control-Allow-Credentials': true,
+        },
+        body: JSON.stringify({
+          msg: 'id is required',
+        }),
+      }
+    }
+    if (!IS_OFFLINE) {
+      try {
+        const response = await Promise.all(
+          files.map((file, index) =>
+            this.S3Adapter.save(this.Bucket, {
+              file,
+              id,
+              name: `photo ${index}`,
+            }),
+          ),
+        )
+
+        return response
+      } catch (error) {
+        console.log('service photo', error)
+        throw error
+      }
+    }
+    return []
   }
 }

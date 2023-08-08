@@ -13,12 +13,13 @@ const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
 
   const { files, data } = event.body
-
+  const { IS_OFFLINE } = process.env
   if (data.type === 'event') {
     data.id = generateId()
   }
-
-  if (files.length) {
+  data.eventPhotos = []
+  // due to limitation of number of requests to AWS, on development will not make a call to the service
+  if (!IS_OFFLINE) {
     const s3Service = new S3Service()
 
     const eventPhotos = await s3Service.saveFile({
@@ -41,6 +42,7 @@ const handler = async (event, context) => {
     body: JSON.stringify(response),
   }
 }
+
 module.exports.handler = middy()
   .use(formDataParser())
   .use(bodyValidation())
