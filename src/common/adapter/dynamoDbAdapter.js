@@ -35,13 +35,18 @@ module.exports = class DynamoDbAdapter {
     this.getConfig = () => {
       const IS_PRODUCTION_CONFIG = process.env.STAGE === 'prod'
 
+      // MOCK_DYNAMODB_ENDPOINT is coming from Jest dynalite to make the integration test. Otherwise is for local development
+      const localEndpoint = process.env.MOCK_DYNAMODB_ENDPOINT
+        ? process.env.MOCK_DYNAMODB_ENDPOINT
+        : 'http://0.0.0.0:8000'
+      const localRegion = process.env.MOCK_DYNAMODB_ENDPOINT
+        ? 'local'
+        : process.env.REGION
+
       const localConfig = {
-        region: 'localhost',
-        endpoint: 'http://0.0.0.0:8000',
-        credentials: {
-          accessKeyId: 'MockAccessKeyId',
-          secretAccessKey: 'MockSecretAccessKey',
-        },
+        endpoint: localEndpoint,
+        sslEnabled: false,
+        region: localRegion,
       }
 
       const productionConfig = {
@@ -257,7 +262,7 @@ module.exports = class DynamoDbAdapter {
     if (filterExpression) {
       queryParams.FilterExpression = filterExpression
     }
-    console.log('ADDDED', { queryParams })
+
     const response = await this.query(queryParams)
     console.log('Items retrieved successfully')
     return response
