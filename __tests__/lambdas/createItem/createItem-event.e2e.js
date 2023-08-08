@@ -31,7 +31,9 @@ describe('createItem function', () => {
     event.eventId = data.data.eventId.split('-')[0]
 
     payload.eventPhotos = []
-    payload.eventDateAndTime = '2023-05-23T11:55:00.000Z'
+    console.log('AAAAAA', new Date())
+    delete payload.eventDateAndTime
+
     delete payload.eventDate
     delete payload.eventTime
     // THEN
