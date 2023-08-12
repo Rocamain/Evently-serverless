@@ -4,6 +4,9 @@ on:
     branches:
       - staging
       - main
+      - api
+      - auth
+
 jobs:
   integration-test:
     name: / Adapter & Service
