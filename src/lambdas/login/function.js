@@ -6,6 +6,7 @@ const httpErrorHandler = require('@middy/http-error-handler')
 const {
   CognitoIdentityProviderClient,
   AdminInitiateAuthCommand,
+  GetUserCommand,
 } = require('@aws-sdk/client-cognito-identity-provider')
 
 const handler = async (event, context) => {
@@ -27,7 +28,11 @@ const handler = async (event, context) => {
   })
 
   const result = await client.send(command)
-
+  const userCommand = new GetUserCommand({
+    AccessToken: result.AuthenticationResult.AccessToken,
+  })
+  const userData = await client.send(userCommand)
+  console.log(userData)
   return {
     statusCode: 200,
     headers: {
@@ -39,6 +44,7 @@ const handler = async (event, context) => {
     body: JSON.stringify({
       msg: 'Login successful',
       ...result.AuthenticationResult,
+      userData,
     }),
   }
 }
