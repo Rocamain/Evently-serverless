@@ -33,22 +33,24 @@ module.exports = class DynamoDbAdapter {
     }
 
     this.getConfig = () => {
-      const IS_PRODUCTION_CONFIG = process.env.STAGE === 'prod'
+      const IS_OFFLINE = process.env.STAGE === 'local'
+      console.log()
+      if (IS_OFFLINE) {
+        // MOCK_DYNAMODB_ENDPOINT is coming from Jest dynalite to make the integration test. Otherwise is for local development
+        const localEndpoint = process.env.MOCK_DYNAMODB_ENDPOINT
+          ? process.env.MOCK_DYNAMODB_ENDPOINT
+          : 'http://127.0.0.1:8000'
+        const localRegion = process.env.MOCK_DYNAMODB_ENDPOINT
+          ? 'local'
+          : process.env.REGION
 
-      // MOCK_DYNAMODB_ENDPOINT is coming from Jest dynalite to make the integration test. Otherwise is for local development
-      const localEndpoint = process.env.MOCK_DYNAMODB_ENDPOINT
-        ? process.env.MOCK_DYNAMODB_ENDPOINT
-        : 'http://0.0.0.0:8000'
-      const localRegion = process.env.MOCK_DYNAMODB_ENDPOINT
-        ? 'local'
-        : process.env.REGION
-
-      const localConfig = {
-        endpoint: localEndpoint,
-        sslEnabled: false,
-        region: localRegion,
+        const localConfig = {
+          endpoint: localEndpoint,
+          sslEnabled: false,
+          region: localRegion,
+        }
+        return localConfig
       }
-
       const productionConfig = {
         region: process.env.REGION,
         requestHandler: new NodeHttpHandler({
@@ -59,9 +61,7 @@ module.exports = class DynamoDbAdapter {
         }),
       }
 
-      const config = IS_PRODUCTION_CONFIG ? productionConfig : localConfig
-
-      return config
+      return productionConfig
     }
 
     //  CONNECTION

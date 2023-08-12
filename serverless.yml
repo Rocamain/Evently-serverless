@@ -38,6 +38,7 @@ custom:
     stages:
       - local
     start:
+      host: 127.0.0.1
       port: 8000
       heapInitial: 200m
       heapMax: 1g
@@ -112,6 +113,7 @@ functions:
       - httpApi:
           method: POST
           path: /item
+        
     iamRoleStatements:
       - Sid: DynamoDBReadWrite
         Effect: Allow
@@ -186,28 +188,17 @@ functions:
         - httpApi:
             path: /item/{id}
             method: DELETE
+            authorizer: 
+              name: userAuthorizer     
       iamRoleStatements:
         - Effect: 'Allow'
           Action:
             - 'DynamoDB:DeleteItem'
-          Resource: !GetAtt eventlyTable.Arn    
-package:
-  individually: true
-  patterns:
-    # include
-    - src/**
-    
-    # exclude
-    - '!*'
-    - '.dynamodb/**'
-    - '.husky/**'
-    - '!__tests__/**'
-
+          Resource: !GetAtt eventlyTable.Arn
+      
 resources:
   Description: ${self:custom.description}    
-
   Resources:
-
     UserPool:
       Type: AWS::Cognito::UserPool
       Properties:
@@ -229,21 +220,18 @@ resources:
             Mutable: true
         Policies:
             PasswordPolicy:
-              MinimumLength: 8
-        
-
+              MinimumLength: 8    
     UserPoolClient:
       Type : "AWS::Cognito::UserPoolClient"
       Properties:
         ClientName:  ${self:service}-${sls:stage}-UserPoolClient
+        GenerateSecret: false
         UserPoolId: 
           Ref: UserPool
         AccessTokenValidity: 10
         IdTokenValidity: 10
         ExplicitAuthFlows:
           - "ADMIN_NO_SRP_AUTH"
-
-
     eventlyTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -289,12 +277,10 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL   
-    
     PhotoBucket: 
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:service}-public-photos-${sls:stage}
-        
         PublicAccessBlockConfiguration:
           BlockPublicAcls: false
         OwnershipControls:
