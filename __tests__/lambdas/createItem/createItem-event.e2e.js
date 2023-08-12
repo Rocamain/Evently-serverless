@@ -31,8 +31,11 @@ describe('createItem function', () => {
     event.eventId = data.data.eventId.split('-')[0]
 
     payload.eventPhotos = []
-    console.log('AAAAAA', new Date())
-    delete payload.eventDateAndTime
+
+    // delete payload.eventDateAndTime
+    /* TO FIX  Error happened on github action difference of one hour */
+    delete response.eventDateAndTime
+    //
 
     delete payload.eventDate
     delete payload.eventTime
