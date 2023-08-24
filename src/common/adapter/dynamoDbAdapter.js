@@ -34,7 +34,7 @@ module.exports = class DynamoDbAdapter {
 
     this.getConfig = () => {
       const IS_OFFLINE = process.env.STAGE === 'local'
-      console.log()
+
       if (IS_OFFLINE) {
         // MOCK_DYNAMODB_ENDPOINT is coming from Jest dynalite to make the integration test. Otherwise is for local development
         const localEndpoint = process.env.MOCK_DYNAMODB_ENDPOINT

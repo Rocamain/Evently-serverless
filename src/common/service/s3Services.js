@@ -9,8 +9,10 @@ module.exports = class S3Service {
 
   async saveFile({ files, id }) {
     const { IS_OFFLINE } = process.env
+
     // due to limitation of number of requests to AWS, on development will not make a call to the service
-    if (files.length === 0 && !IS_OFFLINE) {
+    if (files.length === 0 || !id) {
+      const message = !id ? 'id is required' : 'photo file is required'
       return {
         statusCode: 400,
         headers: {
@@ -20,25 +22,11 @@ module.exports = class S3Service {
           'Access-Control-Allow-Credentials': true,
         },
         body: JSON.stringify({
-          msg: 'photo file is required',
+          message,
         }),
       }
     }
 
-    if (!id) {
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-type': 'application/json; charset=UTF-8',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST',
-          'Access-Control-Allow-Credentials': true,
-        },
-        body: JSON.stringify({
-          msg: 'id is required',
-        }),
-      }
-    }
     if (!IS_OFFLINE) {
       try {
         const response = await Promise.all(
