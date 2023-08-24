@@ -14,6 +14,7 @@ const handler = async (event, context) => {
 
   const { files, data } = event.body
   const { IS_OFFLINE } = process.env
+
   if (data.type === 'event') {
     data.id = generateId()
   }
