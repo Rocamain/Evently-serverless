@@ -220,6 +220,28 @@ functions:
           Action:
             - 'DynamoDB:DeleteItem'
           Resource: !GetAtt eventlyTable.Arn
+  updateItem:
+    name: ${self:service}-${self:provider.stage}-update-item
+    handler: src/lambdas/updateItem/function.handler
+    description: Update Item in repository
+    memorySize: 128
+    timeout: 25
+    environment:
+      tableName: ${self:custom.tableName}
+      BUCKET_NAME: ${self:custom.bucketName}
+    events:
+      - httpApi:
+          method: POST
+          path: /item/{id}
+          authorizer: 
+            name: userAuthorizer              
+    iamRoleStatements:
+      - Sid: DynamoDBReadWrite
+        Effect: Allow
+        Action:
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+        Resource: !GetAtt eventlyTable.Arn 
       
 resources:
   Description: ${self:custom.description}    

@@ -9,11 +9,17 @@ const {
   GetUserCommand,
 } = require('@aws-sdk/client-cognito-identity-provider')
 
+const userAttributes = (attributes) => {
+  return attributes.reduce((acc, { Name, Value }) => {
+    return { ...acc, [Name]: Value }
+  }, {})
+}
+
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
 
   const { USER_POOL_ID, REGION, CLIENT_ID } = process.env
-  const { email, password } = JSON.parse(event.body)
+  const { email, password } = event.body
 
   const client = new CognitoIdentityProviderClient({ region: REGION })
 
@@ -31,8 +37,10 @@ const handler = async (event, context) => {
   const userCommand = new GetUserCommand({
     AccessToken: result.AuthenticationResult.AccessToken,
   })
-  const userData = await client.send(userCommand)
-  console.log(userData)
+
+  const { UserAttributes } = await client.send(userCommand)
+  const userInfo = userAttributes(UserAttributes)
+  console.log(`Login done`)
   return {
     statusCode: 200,
     headers: {
@@ -42,9 +50,9 @@ const handler = async (event, context) => {
       'Access-Control-Allow-Credentials': true,
     },
     body: JSON.stringify({
-      msg: 'Login successful',
+      message: 'Login successful',
       ...result.AuthenticationResult,
-      userData,
+      userInfo,
     }),
   }
 }

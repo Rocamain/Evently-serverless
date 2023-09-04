@@ -13,7 +13,7 @@ const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
 
   const { USER_POOL_ID, REGION } = process.env
-  const { email, password, name, lastName } = JSON.parse(event.body)
+  const { email, password, name, surname } = event.body
 
   const client = new CognitoIdentityProviderClient({ region: REGION })
 
@@ -22,7 +22,7 @@ const handler = async (event, context) => {
     Username: email,
     UserAttributes: [
       { Name: 'name', Value: name },
-      { Name: 'family_name', Value: lastName },
+      { Name: 'family_name', Value: surname },
       { Name: 'email', Value: email },
       { Name: 'email_verified', Value: 'true' },
     ],
