@@ -54,6 +54,33 @@ module.exports = class EntityService {
     return { data: Entity.fromItem(entityItem) }
   }
 
+  async update(requestBody, entityId) {
+    console.log(
+      `Updating entity item in repository on table ${process.env.tableName}`,
+    )
+
+    const [id, userId] = entityId.split('-')
+    if (entityId.includes('event')) {
+      const eventInfo = await this.get(id, 'event')
+      const eventExist = Boolean(Object.keys(eventInfo.data).length)
+
+      if (!eventExist) {
+        const error = new Error()
+        error.message = 'Event does not exist'
+        error.name = 'ValidationException'
+        throw error
+      }
+    }
+
+    const entityItem = await this.dynamoDbAdapter.updateItem(
+      this.tableName,
+      { id, userId },
+      requestBody,
+    )
+
+    return { message: 'Update successful', data: Entity.fromItem(entityItem) }
+  }
+
   async get(id, userId) {
     console.log(
       `Retrieving Entity item id ${id} from repository entityService from table ${process.env.tableName}`,

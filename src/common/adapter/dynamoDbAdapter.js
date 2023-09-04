@@ -5,6 +5,7 @@ const {
   PutCommand,
   QueryCommand,
   DeleteCommand,
+  UpdateCommand,
   BatchWriteCommand,
 } = require('@aws-sdk/lib-dynamodb')
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
@@ -94,6 +95,42 @@ module.exports = class DynamoDbAdapter {
     const response = await this.documentClient.send(command)
 
     return response
+  }
+
+  async updateItem(tableName, entity, fieldsToChange) {
+    console.log(`Saving new item into DynamoDB table ${tableName}`)
+    const updateExpression = []
+    const expressionAttributeValues = {}
+
+    for (const key in fieldsToChange) {
+      updateExpression.push(`${key} = :${key}`)
+      expressionAttributeValues[`:${key}`] = fieldsToChange[key]
+    }
+
+    const params = {
+      TableName: tableName,
+      Key: {
+        PK: entity.id,
+        userId: entity.userId,
+      },
+      UpdateExpression: 'SET ' + updateExpression.join(', '),
+      ExpressionAttributeValues: expressionAttributeValues,
+      ReturnValues: 'ALL_NEW',
+    }
+
+    const response = await this.update(params)
+    console.log('Item updated successfully')
+    return response
+  }
+
+  async update(params) {
+    const command = new UpdateCommand({
+      ...params,
+    })
+
+    const { Attributes } = await this.documentClient.send(command)
+
+    return Attributes
   }
 
   async getItem(tableName, { id, userId }) {
