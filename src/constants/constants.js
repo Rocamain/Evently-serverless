@@ -121,6 +121,23 @@ module.exports = {
     required: BODY_EVENT_PROPERTIES,
     additionalProperties: false,
   },
+  EDIT_EVENT_SCHEMA: {
+    type: 'object',
+    properties: {
+      eventTitle: { type: 'string' },
+      eventDescription: { type: 'string' },
+      eventLocation: { type: 'string' },
+      eventCategory: {
+        type: 'string',
+        enum: EVENT_CATEGORIES,
+      },
+      eventDate: { type: 'string', format: 'DD-MM-YYYY' },
+      eventTime: { type: 'string', format: 'HH:MM' },
+      eventPrice: { type: 'number', minimum: 0 },
+      eventLink: { type: 'string', format: 'uri' },
+    },
+    additionalProperties: false,
+  },
   BOOKING_SCHEMA: {
     type: 'object',
     properties: {
