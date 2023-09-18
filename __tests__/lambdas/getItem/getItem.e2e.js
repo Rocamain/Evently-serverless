@@ -62,7 +62,7 @@ describe('getItem function', () => {
 
     // THEN
     expect(status).toBe(200)
-    expect(response).toEqual({})
+    expect(response).toEqual({ items: [], count: 0 })
   })
 
   test('should respond with statusCode 201 to correct request item Booking', async () => {
