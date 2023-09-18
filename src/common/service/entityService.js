@@ -14,7 +14,7 @@ module.exports = class EntityService {
       const { eventId, ...restRequestBody } = requestBody
       const eventInfo = await this.get(eventId, 'event')
 
-      if (Object.keys(eventInfo.data).length) {
+      if (eventInfo && Object.keys(eventInfo.data).length) {
         const {
           eventLocation,
           eventDateAndTime,
@@ -85,13 +85,29 @@ module.exports = class EntityService {
     console.log(
       `Retrieving Entity item id ${id} from repository entityService from table ${process.env.tableName}`,
     )
+    if (userId) {
+      const entityItem = await this.dynamoDbAdapter.getItem(this.tableName, {
+        id,
+        userId,
+      })
+      return { data: entityItem ? Entity.fromItem(entityItem) : {} }
+    }
 
-    const entityItem = await this.dynamoDbAdapter.getItem(this.tableName, {
-      id,
-      userId,
-    })
-
-    return { data: entityItem ? Entity.fromItem(entityItem) : {} }
+    const { Items, Count } = await this.dynamoDbAdapter.queryByField(
+      this.tableName,
+      {
+        field: 'PK',
+        value: id,
+      },
+    )
+    return {
+      data: Items
+        ? {
+            items: Items.map((entityItem) => Entity.fromItem(entityItem)),
+            count: Count,
+          }
+        : {},
+    }
   }
 
   async queryByGlobalIndex(id, params) {
