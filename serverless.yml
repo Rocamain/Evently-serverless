@@ -60,16 +60,21 @@ custom:
           Action:
             - 's3:*'
           Resource: 'arn:aws:s3:::${self:service}-public-photos-${sls:stage}'
+  esbuild:
+    # keep existing configurations
+    external:
+      - sharp
+    packagerOptions:
+      scripts:
+        - npm install --arch=x64 --platform=linux sharp
+# package:
+#   individually: true
+#   patterns: include
+#     - src/**
 
-package:
-  individually: true
-  patterns:
-    # include
-    - src/**
-
-    # exclude
-    - '!*'
-    - '!__tests__/**'
+#     exclude
+#     - '!*'
+#     - '!__tests__/**'
 
 functions:
   join:
@@ -77,6 +82,7 @@ functions:
     handler: src/lambdas/join/function.handler
     description: register to ${self:service}-${self:provider.stage}
     memorySize: 128
+    timeout: 30
     events:
       - httpApi:
           method: POST
@@ -117,7 +123,7 @@ functions:
     handler: src/lambdas/savePhoto/function.handler
     description: Save photo in s3
     memorySize: 256
-    timeout: 20
+    timeout: 30
     environment:
       BUCKET_NAME: ${self:custom.bucketName}
     events:
