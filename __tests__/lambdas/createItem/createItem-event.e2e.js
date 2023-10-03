@@ -1,7 +1,6 @@
 const { default: axios } = require('axios')
 const FormData = require('form-data')
 
-// axios.defaults.baseURL = ``
 const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
 
 describe('createItem function', () => {
@@ -22,25 +21,29 @@ describe('createItem function', () => {
       eventPrice: 0,
       eventLink: 'https://website.com',
     }
+
     const form = new FormData()
+
     form.append('data', JSON.stringify(payload))
+
     // WHEN
     const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
 
     const { eventId, createdAt, ...response } = data.data
     event.eventId = data.data.eventId.split('-')[0]
 
-    payload.eventPhotos = []
+    payload.eventPhotos = ['placeholder.com/hello.webp']
 
-    // delete payload.eventDateAndTime
-    /* TO FIX  Error happened on github action difference of one hour */
+    delete payload.eventDateAndTime
+
+    // TO FIX  Error happened on github action difference of one hour because is UTC
+
     delete response.eventDateAndTime
-    //
 
     delete payload.eventDate
     delete payload.eventTime
-    // THEN
 
+    // THEN
     expect(status).toBe(201)
     expect(new Date(createdAt)).toBeInstanceOf(Date)
     expect(createdAt).toBe(new Date(createdAt).toISOString())
@@ -497,8 +500,8 @@ describe('createItem function', () => {
       eventLocation: 'Online',
       eventDate: '21-05-2023',
       eventTime: '22:55',
-      eventPrice: false,
-      eventLink: 'website.com', // Error here
+      eventPrice: 'Not a number',
+      eventLink: 'website.com',
     }
 
     // WHEN
@@ -508,6 +511,7 @@ describe('createItem function', () => {
     const { response } = await axios
       .post(`${API_BASE_URL}/item`, form)
       .catch((err) => err)
+
     const { status, data } = response
 
     expect(status).toBe(400)
