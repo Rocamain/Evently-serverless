@@ -1,6 +1,6 @@
-const generateId = require('./utils/generateId')
-const generateDate = require('./utils/generateDate')
-const { stingFormatter } = require('./utils/stringFormatter')
+const generateId = require('../service/utils/generateId')
+const generateDate = require('../service/utils/generateDate')
+const { stingFormatter } = require('../service/utils/stringFormatter')
 const {
   ENTITY_EVENT_PROPERTIES,
   ENTITY_BOOKING_PROPERTIES,
@@ -15,6 +15,7 @@ module.exports = class Entity {
     eventOwnerId,
     eventOwnerName,
     eventOwnerEmail,
+    eventOwnerPicture,
     eventTitle,
     eventDescription,
     eventCategory,
@@ -28,6 +29,7 @@ module.exports = class Entity {
     userId,
     userName,
     userEmail,
+    userPicture,
   }) {
     this.id = id || generateId()
     this.createdAt = createdAt
@@ -52,6 +54,8 @@ module.exports = class Entity {
     this.userId = userId || type
     this.userName = userName
     this.userEmail = stingFormatter(userEmail)
+    this.eventOwnerPicture = eventOwnerPicture
+    this.userPicture = userPicture
   }
 
   static fromItem(item) {

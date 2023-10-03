@@ -1,14 +1,31 @@
 const S3Adapter = require('../adapter/s3Adapter')
 
-const { BUCKET_NAME } = process.env
 module.exports = class S3Service {
-  constructor(s3Adapter) {
-    this.S3Adapter = s3Adapter || new S3Adapter()
-    this.Bucket = BUCKET_NAME
+  constructor() {
+    this.S3Adapter = new S3Adapter()
   }
 
-  async saveFile({ files, id }) {
-    const { IS_OFFLINE } = process.env
+  async saveEventPictures({ files, eventId }) {
+    // try {
+    const response = await Promise.all(
+      files.map((file, index) =>
+        this.S3Adapter.saveEventPhoto({
+          file,
+          eventId,
+          picId: `EventPicture${index + 1}`,
+        }),
+      ),
+    )
+
+    return response
+    // } catch (error) {
+    //   console.log('service photo error', error)
+    //   throw error
+    // }
+  }
+
+  async saveFile({ type, files, id }) {
+    // const { IS_OFFLINE } = process.env
 
     // due to limitation of number of requests to AWS, on development will not make a call to the service
     if (files.length === 0 || !id) {
@@ -27,24 +44,24 @@ module.exports = class S3Service {
       }
     }
 
-    if (!IS_OFFLINE) {
-      try {
-        const response = await Promise.all(
-          files.map((file, index) =>
-            this.S3Adapter.save(this.Bucket, {
-              file,
-              id,
-              name: `photo ${index}`,
-            }),
-          ),
-        )
+    // if (!IS_OFFLINE) {
+    try {
+      const response = await Promise.all(
+        files.map((file, index) =>
+          this.S3Adapter.saveEventPhoto({
+            file,
+            id,
+            picId: `${type} ${index}`,
+          }),
+        ),
+      )
 
-        return response
-      } catch (error) {
-        console.log('service photo', error)
-        throw error
-      }
+      return response
+    } catch (error) {
+      console.log('service photo error', error)
+      throw error
     }
-    return []
+    // }
+    // return []
   }
 }
