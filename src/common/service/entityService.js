@@ -1,46 +1,75 @@
 const DynamoDbAdapter = require('../adapter/dynamoDbAdapter')
+const S3Service = require('./s3Services')
 const Entity = require('../entity/entity')
+const generateId = require('./utils/generateId')
+
 const { tableName, indexName, field } = process.env
 module.exports = class EntityService {
   constructor(dynamoDbAdapter) {
     this.dynamoDbAdapter = dynamoDbAdapter || new DynamoDbAdapter()
+    this.s3Service = new S3Service()
     this.tableName = tableName
     this.indexName = indexName
     this.field = field
   }
 
-  async create(requestBody) {
-    if (requestBody.type === 'booking') {
-      const { eventId, ...restRequestBody } = requestBody
-      const eventInfo = await this.get(eventId, 'event')
-
-      if (eventInfo && Object.keys(eventInfo.data).length) {
-        const {
-          eventLocation,
-          eventDateAndTime,
-          eventOwnerId,
-          eventOwnerName,
-          eventTitle,
-          eventCategory,
-        } = eventInfo.data
-
-        requestBody = {
-          eventDateAndTime,
-          eventOwnerId,
-          eventOwnerName,
-          eventLocation,
-          eventTitle,
-          eventCategory,
-          eventId,
-          ...restRequestBody,
-        }
-      } else {
-        const error = new Error()
-        error.message = 'Event does not exist'
-        error.name = 'ValidationException'
-        throw error
-      }
+  async createEvent(event, files) {
+    event.id = generateId()
+    const { IS_OFFLINE } = process.env
+    if (!IS_OFFLINE) {
+      event.eventPhotos = await this.s3Service.saveEventPictures({
+        files,
+        eventId: event.id,
+      })
+    } else {
+      event.eventPhotos = ['placeholder.com/hello.webp']
     }
+    console.log({
+      eventPhotos: event,
+      tableName: this.tableName,
+      dynamoDbAdapter: this.dynamoDbAdapter.create,
+    })
+
+    const response = await this.create(event)
+    console.log('Last', response)
+    return response
+  }
+
+  async createBooking(booking) {
+    const { eventId, ...restRequestBody } = booking
+    const eventInfo = await this.get(eventId, 'event')
+
+    if (eventInfo && Object.keys(eventInfo.data).length) {
+      const {
+        eventLocation,
+        eventDateAndTime,
+        eventOwnerId,
+        eventOwnerName,
+        eventTitle,
+        eventCategory,
+      } = eventInfo.data
+
+      booking = {
+        eventDateAndTime,
+        eventOwnerId,
+        eventOwnerName,
+        eventLocation,
+        eventTitle,
+        eventCategory,
+        eventId,
+        ...restRequestBody,
+      }
+
+      return await this.create(booking)
+    } else {
+      const error = new Error()
+      error.message = 'Event does not exist'
+      error.name = 'ValidationException'
+      throw error
+    }
+  }
+
+  async create(requestBody) {
     console.log(
       `Creating entity item in repository on table ${process.env.tableName}`,
     )
@@ -124,7 +153,7 @@ module.exports = class EntityService {
         ...params,
       },
     )
-
+    console.log('service global index', { response })
     const items = response.Items
     const lastEvaluatedKey = response.LastEvaluatedKey
 

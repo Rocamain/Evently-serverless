@@ -4,33 +4,20 @@ const EntityService = require('../../common/service/entityService')
 const bodyValidation = require('../../common/middlewares/requestBodyValidator')
 const formDataParser = require('../../common/middlewares/formDataParser')
 const customErrors = require('../../common/middlewares/customError')
-const S3Service = require('../../common/service/s3Services')
-const generateId = require('../../common/entity/utils/generateId')
 
 const myEntityService = new EntityService()
+
+const createEntity = {
+  event: async (data, files) => await myEntityService.createEvent(data, files),
+  booking: async (data) => await myEntityService.createBooking(data),
+}
 
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
 
   const { files, data } = event.body
-  const { IS_OFFLINE } = process.env
 
-  if (data.type === 'event') {
-    data.id = generateId()
-  }
-  data.eventPhotos = []
-  // due to limitation of number of requests to AWS, on development will not make a call to the service
-  if (!IS_OFFLINE) {
-    const s3Service = new S3Service()
-
-    const eventPhotos = await s3Service.saveFile({
-      files,
-      id: data.id,
-    })
-    data.eventPhotos = eventPhotos
-  }
-
-  const response = await myEntityService.create(data)
+  const response = await createEntity[data.type](data, files)
 
   return {
     statusCode: 201,
@@ -50,3 +37,4 @@ module.exports.handler = middy()
   .use(customErrors())
   .use(httpErrorHandler())
   .handler(handler)
+  .use(customErrors())
