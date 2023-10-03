@@ -1,4 +1,4 @@
-const getSchema = require('../entity/utils/getSchema')
+const getSchema = require('../service/utils/getSchema')
 const validateSchema = require('./utils/validateSchema')
 
 const bodyValidation = () => {
