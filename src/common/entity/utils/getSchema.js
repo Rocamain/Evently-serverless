@@ -1,5 +1,6 @@
 const {
   EVENT_SCHEMA,
+  EDIT_EVENT_SCHEMA,
   BOOKING_SCHEMA,
   TYPE_ERROR_SCHEMA,
   QUERY_PARAMS_SCHEMA,
@@ -10,7 +11,9 @@ const getSchema = (type) => {
     case 'event': {
       return EVENT_SCHEMA
     }
-
+    case 'editEvent': {
+      return EDIT_EVENT_SCHEMA
+    }
     case 'booking': {
       return BOOKING_SCHEMA
     }

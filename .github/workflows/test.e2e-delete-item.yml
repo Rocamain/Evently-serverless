@@ -3,10 +3,8 @@ name: E2E Test
 on:
   push:
     branches:
-      - test
       - staging
       - api
-
 
 jobs:
   End-to-end-Test:
@@ -24,9 +22,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-            npm ci
-            npm install -g serverless
-            sls dynamodb install
+          npm ci
+          npm install -g serverless
+          sls dynamodb install
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -38,5 +36,3 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          
-

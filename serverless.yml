@@ -21,11 +21,11 @@ provider:
     authorizers:
       userAuthorizer:
         identitySource: $request.header.Authorization
-        issuerUrl: 
+        issuerUrl:
           Fn::Sub:
             - 'https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}'
-            - UserPoolId: !Ref UserPool 
-        audience: 
+            - UserPoolId: !Ref UserPool
+        audience:
           - !Ref UserPoolClient
 
 custom:
@@ -34,12 +34,12 @@ custom:
   default_stage: local
   userPoolId: !Ref UserPool
   bucketName: ${self:service}-public-photos-${sls:stage}
-  audience: !Ref UserPoolClient   
+  audience: !Ref UserPoolClient
   serverless-offline:
     host: 'localhost'
     httpPort: 4000
     lambdaPort: 4001
-    port: 4000 
+    port: 4000
     allowCache: true
     noPrependStageInUrl: true
 
@@ -58,25 +58,31 @@ custom:
       statements:
         - Effect: Allow
           Action:
-          - "s3:*"
-          Resource: "arn:aws:s3:::${self:service}-public-photos-${sls:stage}" 
+            - 's3:*'
+          Resource: 'arn:aws:s3:::${self:service}-public-photos-${sls:stage}'
+  esbuild:
+    # keep existing configurations
+    external:
+      - sharp
+    packagerOptions:
+      scripts:
+        - npm install --arch=x64 --platform=linux sharp
+# package:
+#   individually: true
+#   patterns: include
+#     - src/**
 
-package:
-  individually: true
-  patterns:
-    # include
-    - src/**
-    
-    # exclude
-    - '!*'
-    - '!__tests__/**'
-    
+#     exclude
+#     - '!*'
+#     - '!__tests__/**'
+
 functions:
-  join: 
+  join:
     name: ${self:service}-${self:provider.stage}-join
     handler: src/lambdas/join/function.handler
     description: register to ${self:service}-${self:provider.stage}
     memorySize: 128
+    timeout: 30
     events:
       - httpApi:
           method: POST
@@ -91,8 +97,8 @@ functions:
           - cognito-idp:AdminInitiateAuth
           - cognito-idp:AdminCreateUser
           - cognito-idp:AdminSetUserPassword
-        Resource: "*"
-  login: 
+        Resource: '*'
+  login:
     name: ${self:service}-${self:provider.stage}-login
     handler: src/lambdas/login/function.handler
     description: register to ${self:service}-${self:provider.stage}
@@ -104,20 +110,20 @@ functions:
     environment:
       USER_POOL_ID:
         Ref: UserPool
-      CLIENT_ID: 
-        Ref: UserPoolClient  
+      CLIENT_ID:
+        Ref: UserPoolClient
     iamRoleStatements:
       - Sid: CognitoInit
         Effect: Allow
         Action:
           - cognito-idp:AdminInitiateAuth
-        Resource: "*"
+        Resource: '*'
   savePhoto:
     name: ${self:service}-${self:provider.stage}-save-photo
     handler: src/lambdas/savePhoto/function.handler
     description: Save photo in s3
     memorySize: 256
-    timeout: 20
+    timeout: 30
     environment:
       BUCKET_NAME: ${self:custom.bucketName}
     events:
@@ -137,21 +143,21 @@ functions:
       - httpApi:
           method: POST
           path: /item
-          authorizer: 
-            name: userAuthorizer              
+          authorizer:
+            name: userAuthorizer
     iamRoleStatements:
       - Sid: DynamoDBReadWrite
         Effect: Allow
         Action:
           - dynamodb:PutItem
           - dynamodb:UpdateItem
-        Resource: !GetAtt eventlyTable.Arn 
+        Resource: !GetAtt eventlyTable.Arn
   getItem:
     name: ${self:service}-${self:provider.stage}-get-item-by-id
     handler: src/lambdas/getItem/function.handler
     description: Get an Item from repository.
     memorySize: 128
-    timeout: 5
+    timeout: 15
     environment:
       tableName: ${self:custom.tableName}
     events:
@@ -164,62 +170,62 @@ functions:
           - 'DynamoDB:GetItem'
         Resource: !GetAtt eventlyTable.Arn
   getItemsByOwner:
-      name: ${self:service}-${self:provider.stage}-get-items-by-owner
-      handler: src/lambdas/getItemsById/function.handler
-      description: Get Items from repository by eventOwner.
-      memorySize: 128
-      timeout: 10
-      environment:
-        tableName: ${self:custom.tableName}
-        indexName: eventOwnerId
-        field: eventOwnerId
-      events:
-        - httpApi:
-            path: /items/byOwner/{id}
-            method: GET
-      iamRoleStatements:
-        - Effect: 'Allow'
-          Action:
-            - 'DynamoDB:GetItem'
-          Resource: !GetAtt eventlyTable.Arn
+    name: ${self:service}-${self:provider.stage}-get-items-by-owner
+    handler: src/lambdas/getItemsById/function.handler
+    description: Get Items from repository by eventOwner.
+    memorySize: 128
+    timeout: 10
+    environment:
+      tableName: ${self:custom.tableName}
+      indexName: eventOwnerId
+      field: eventOwnerId
+    events:
+      - httpApi:
+          path: /items/byOwner/{id}
+          method: GET
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - 'DynamoDB:GetItem'
+        Resource: !GetAtt eventlyTable.Arn
   getItemsByUser:
-      name: ${self:service}-${self:provider.stage}-get-items-by-event-owner
-      handler: src/lambdas/getItemsById/function.handler
-      description: Get Items from repository by eventOwner.
-      memorySize: 128
-      timeout: 10
-      environment:
-        tableName: ${self:custom.tableName}
-        indexName: userId
-        field: userId
-      events:
-        - httpApi:
-            path: /items/byUser/{id}
-            method: GET
-      iamRoleStatements:
-        - Effect: 'Allow'
-          Action:
-            - 'DynamoDB:GetItem'
-          Resource: !GetAtt eventlyTable.Arn
+    name: ${self:service}-${self:provider.stage}-get-items-by-event-owner
+    handler: src/lambdas/getItemsById/function.handler
+    description: Get Items from repository by eventOwner.
+    memorySize: 128
+    timeout: 10
+    environment:
+      tableName: ${self:custom.tableName}
+      indexName: userId
+      field: userId
+    events:
+      - httpApi:
+          path: /items/byUser/{id}
+          method: GET
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - 'DynamoDB:GetItem'
+        Resource: !GetAtt eventlyTable.Arn
   DeleteItem:
-      name: ${self:service}-${self:provider.stage}-delete-item
-      handler: src/lambdas/deleteItem/function.handler
-      description: Delete Item from repository.
-      memorySize: 128
-      timeout: 5
-      environment:
-        tableName: ${self:custom.tableName}
-      events:
-        - httpApi:
-            path: /item/{id}
-            method: DELETE
-            authorizer: 
-              name: userAuthorizer     
-      iamRoleStatements:
-        - Effect: 'Allow'
-          Action:
-            - 'DynamoDB:DeleteItem'
-          Resource: !GetAtt eventlyTable.Arn
+    name: ${self:service}-${self:provider.stage}-delete-item
+    handler: src/lambdas/deleteItem/function.handler
+    description: Delete Item from repository.
+    memorySize: 128
+    timeout: 5
+    environment:
+      tableName: ${self:custom.tableName}
+    events:
+      - httpApi:
+          path: /item/{id}
+          method: DELETE
+          authorizer:
+            name: userAuthorizer
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - 'DynamoDB:DeleteItem'
+        Resource: !GetAtt eventlyTable.Arn
   updateItem:
     name: ${self:service}-${self:provider.stage}-update-item
     handler: src/lambdas/updateItem/function.handler
@@ -233,52 +239,52 @@ functions:
       - httpApi:
           method: POST
           path: /item/{id}
-          authorizer: 
-            name: userAuthorizer              
+          authorizer:
+            name: userAuthorizer
     iamRoleStatements:
       - Sid: DynamoDBReadWrite
         Effect: Allow
         Action:
           - dynamodb:PutItem
           - dynamodb:UpdateItem
-        Resource: !GetAtt eventlyTable.Arn 
-      
+        Resource: !GetAtt eventlyTable.Arn
+
 resources:
-  Description: ${self:custom.description}    
+  Description: ${self:custom.description}
   Resources:
     UserPool:
       Type: AWS::Cognito::UserPool
       Properties:
-        UserPoolName:  ${self:service}-${sls:stage}-UserPool
-        AccountRecoverySetting: 
-          RecoveryMechanisms: 
+        UserPoolName: ${self:service}-${sls:stage}-UserPool
+        AccountRecoverySetting:
+          RecoveryMechanisms:
             - Name: verified_email
               Priority: 1
         UsernameAttributes:
           - email
         AutoVerifiedAttributes:
-          - email            
+          - email
         Schema:
-          - Name: "family_name"
+          - Name: 'family_name'
             Required: true
             Mutable: true
-          - Name: "name"
+          - Name: 'name'
             Required: true
             Mutable: true
         Policies:
-            PasswordPolicy:
-              MinimumLength: 8    
+          PasswordPolicy:
+            MinimumLength: 8
     UserPoolClient:
-      Type : "AWS::Cognito::UserPoolClient"
+      Type: 'AWS::Cognito::UserPoolClient'
       Properties:
-        ClientName:  ${self:service}-${sls:stage}-UserPoolClient
+        ClientName: ${self:service}-${sls:stage}-UserPoolClient
         GenerateSecret: false
-        UserPoolId: 
+        UserPoolId:
           Ref: UserPool
         AccessTokenValidity: 10
         IdTokenValidity: 10
         ExplicitAuthFlows:
-          - "ADMIN_NO_SRP_AUTH"
+          - 'ADMIN_NO_SRP_AUTH'
     eventlyTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -287,17 +293,17 @@ resources:
           - AttributeName: PK
             AttributeType: S
           - AttributeName: eventOwnerId
-            AttributeType: S  
+            AttributeType: S
           - AttributeName: userId
-            AttributeType: S  
+            AttributeType: S
           - AttributeName: eventDateAndTime
-            AttributeType: S    
+            AttributeType: S
         KeySchema:
           - AttributeName: PK
             KeyType: HASH
           - AttributeName: userId
-            KeyType: RANGE  
-        BillingMode: PAY_PER_REQUEST     
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
         Tags:
           - Key: Application
             Value: ${self:service}
@@ -315,7 +321,7 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-          
+
           - IndexName: userId
             KeySchema:
               - AttributeName: userId
@@ -323,8 +329,8 @@ resources:
               - AttributeName: eventDateAndTime
                 KeyType: RANGE
             Projection:
-              ProjectionType: ALL   
-    PhotoBucket: 
+              ProjectionType: ALL
+    PhotoBucket:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:service}-public-photos-${sls:stage}
@@ -338,12 +344,12 @@ resources:
       Properties:
         Bucket: !Ref PhotoBucket
         PolicyDocument:
-          Version: "2012-10-17"
-          Statement: 
+          Version: '2012-10-17'
+          Statement:
             - Effect: Allow
-              Action: 
-                - "s3:GetObject"
-                - "s3:PutObject"
-              Resource: 
+              Action:
+                - 's3:GetObject'
+                - 's3:PutObject'
+              Resource:
                 - !Join ['/', [!GetAtt [PhotoBucket, Arn], '*']]
-              Principal: "*"    
+              Principal: '*'

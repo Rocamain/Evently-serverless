@@ -8,7 +8,7 @@ const handler = async (event, context) => {
 
   const [id, userId] = event.pathParameters.id.split('-')
 
-  if (id && userId) {
+  if (id) {
     const myEntityService = new EntityService()
 
     const response = await myEntityService.get(id, userId)
@@ -24,6 +24,7 @@ const handler = async (event, context) => {
       body: JSON.stringify(response),
     }
   }
+
   return {
     statusCode: 200,
     Headers: {
