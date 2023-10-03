@@ -82,9 +82,7 @@ module.exports = class DynamoDbAdapter {
       ConditionExpression: 'attribute_not_exists(PK)',
     }
 
-    await this.create(params)
-    console.log('Item saved successfully')
-    return entity
+    return await this.create(params)
   }
 
   async create(params) {
@@ -93,7 +91,7 @@ module.exports = class DynamoDbAdapter {
     })
 
     const response = await this.documentClient.send(command)
-
+    console.log('Item saved successfully')
     return response
   }
 
@@ -146,16 +144,21 @@ module.exports = class DynamoDbAdapter {
     }
 
     const response = await this.get(params)
-    console.log('Item retrieved successfully')
 
-    return response.Item
+    return response
   }
 
   async get(params) {
     const command = new GetCommand({
       ...params,
     })
-    return this.documentClient.send(command)
+    const { Item } = await this.documentClient.send(command)
+
+    Item
+      ? console.log('Item retrieved successfully')
+      : console.log('Item does not exist in the DB')
+
+    return Item
   }
 
   async deleteItem(tableName, { id, userId }) {

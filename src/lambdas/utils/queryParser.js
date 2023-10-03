@@ -1,4 +1,4 @@
-const generateDate = require('../../common/entity/utils/generateDate')
+const generateDate = require('../../common/service/utils/generateDate')
 const { ACCEPTED_QUERIES } = require('../../constants/constants')
 module.exports = (params) => {
   const query = {}

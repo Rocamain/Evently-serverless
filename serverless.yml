@@ -90,6 +90,7 @@ functions:
     environment:
       USER_POOL_ID:
         Ref: UserPool
+      BUCKET_NAME: ${self:custom.bucketName}
     iamRoleStatements:
       - Sid: CognitoUpdatePut
         Effect: Allow
