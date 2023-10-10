@@ -15,8 +15,9 @@ module.exports = class EntityService {
 
   async createEvent(event, files) {
     event.id = generateId()
-    const { IS_OFFLINE } = process.env
-    if (!IS_OFFLINE) {
+    // const { IS_OFFLINE } = process.env
+
+    if (files.length) {
       event.eventPhotos = await this.s3Service.saveEventPictures({
         files,
         eventId: event.id,
@@ -24,14 +25,9 @@ module.exports = class EntityService {
     } else {
       event.eventPhotos = ['placeholder.com/hello.webp']
     }
-    console.log({
-      eventPhotos: event,
-      tableName: this.tableName,
-      dynamoDbAdapter: this.dynamoDbAdapter.create,
-    })
 
     const response = await this.create(event)
-    console.log('Last', response)
+
     return response
   }
 
