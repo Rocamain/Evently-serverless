@@ -6,22 +6,17 @@ module.exports = class S3Service {
   }
 
   async saveEventPictures({ files, eventId }) {
-    // try {
     const response = await Promise.all(
-      files.map((file, index) =>
-        this.S3Adapter.saveEventPhoto({
+      files.map((file, index) => {
+        return this.S3Adapter.saveEventPhoto({
           file,
           eventId,
           picId: `EventPicture${index + 1}`,
-        }),
-      ),
+        })
+      }),
     )
 
     return response
-    // } catch (error) {
-    //   console.log('service photo error', error)
-    //   throw error
-    // }
   }
 
   async saveFile({ type, files, id }) {
