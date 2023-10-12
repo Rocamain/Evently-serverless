@@ -1,4 +1,6 @@
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
+require('sharp')
+
 const sharp = require('sharp')
 
 const { BUCKET_NAME } = process.env
