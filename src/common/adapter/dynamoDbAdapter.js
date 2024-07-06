@@ -309,7 +309,6 @@ module.exports = class DynamoDbAdapter {
   }
 
   async query(params) {
-    console.log("query params command"{params})
     const command = new QueryCommand({
       ...params,
     })
