@@ -22,16 +22,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
-          npm i --legacy-peer-deps
+          npm ci --legacy-peer-deps
           npm install -g serverless
           sls dynamodb install
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
+
       - name: Run test
         run: npm run e2e-get-item:test
         env:
