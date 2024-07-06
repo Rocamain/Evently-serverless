@@ -37,7 +37,6 @@
     "@aws-sdk/node-http-handler": "^3.310.0",
     "axios": "^1.4.0",
     "dotenv": "^16.4.5",
-    "esbuild": "^0.21.4",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-config-standard": "^17.0.0",
@@ -51,7 +50,6 @@
     "kill-port": "^2.0.1",
     "prettier": "^2.8.7",
     "serverless-dynamodb": "^0.2.43",
-    "serverless-esbuild": "^1.52.1",
     "serverless-export-env": "^2.2.0",
     "serverless-iam-roles-per-function": "^3.2.0"
   },
