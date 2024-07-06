@@ -22,7 +22,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install packages, migrate and integration test
         run: |
-          npm ci
+          npm ci --legacy-peer-deps
           npm i -g serverless
           npm run int:test
         env:

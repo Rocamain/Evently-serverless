@@ -1,14 +1,14 @@
 const customErrors = () => {
   const createErrorResponse = async ({ error }) => {
-    if (error) {
-      if (error.name === 'ConditionalCheckFailedException') {
-        error.message = 'Entry already exist'
-      }
+    console.log('AAAAAAAAAAAAAAAAAAAAAa', error)
 
-      const errorResponse = new ErrorResponse(error)
-
-      return errorResponse
+    if (error.name === 'ConditionalCheckFailedException') {
+      error.message = 'Entry already exist'
     }
+
+    const errorResponse = new ErrorResponse(error)
+
+    return errorResponse
   }
 
   return {

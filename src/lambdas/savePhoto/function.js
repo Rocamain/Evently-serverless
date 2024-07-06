@@ -1,4 +1,4 @@
-const parser = require('lambda-multipart-parser')
+const multipartBodyParser = require("@middy/http-multipart-body-parser");
 const S3Service = require('../../common/service/s3Services')
 const middy = require('@middy/core')
 const httpErrorHandler = require('@middy/http-error-handler')
@@ -13,6 +13,8 @@ const handler = async (event, context) => {
   return filesData
 }
 
-module.exports.handler = middy(handler)
+module.exports.handler = middy()
+  .use(multipartBodyParser)
+  .handler(handler)
   .use(customErrors())
   .use(httpErrorHandler())

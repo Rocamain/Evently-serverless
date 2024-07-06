@@ -8,7 +8,7 @@ const {
 
 module.exports = class Entity {
   constructor({
-    createdAt = new Date(),
+    createdAt,
     id,
     type,
     eventId,
@@ -19,22 +19,23 @@ module.exports = class Entity {
     eventTitle,
     eventDescription,
     eventCategory,
-    eventLocation,
+    eventLocationId,
+    eventLocationLat,
+    eventLocationLng,
+    eventLocationAddress,
     eventDate,
     eventTime,
     eventDateAndTime,
     eventLink,
     eventPrice,
-    eventPhotos,
+    eventPictures,
     userId,
     userName,
     userEmail,
     userPicture,
   }) {
     this.id = id || generateId()
-    this.createdAt = createdAt
-      ? new Date(createdAt).toISOString()
-      : new Date().toISOString()
+    this.createdAt = createdAt || new Date().toISOString()
     this.type = stingFormatter(type)
     this.eventId = eventId
     this.eventOwnerId = eventOwnerId
@@ -43,13 +44,16 @@ module.exports = class Entity {
     this.eventTitle = eventTitle
     this.eventDescription = eventDescription
     this.eventCategory = eventCategory
-    this.eventLocation = eventLocation
+    this.eventLocationId = eventLocationId
+    this.eventLocationLat = eventLocationLat
+    this.eventLocationLng = eventLocationLng
+    this.eventLocationAddress = eventLocationAddress
     this.eventDateAndTime =
       eventDate && eventTime
         ? generateDate(eventDate, eventTime)
         : eventDateAndTime
     this.eventLink = stingFormatter(eventLink)
-    this.eventPhotos = eventPhotos
+    this.eventPictures = eventPictures
     this.eventPrice = eventPrice
     this.userId = userId || type
     this.userName = userName
@@ -59,32 +63,11 @@ module.exports = class Entity {
   }
 
   static fromItem(item) {
-    item.id = item.PK
+    item[`${item.type}Id`] = item.PK
+
     delete item.PK
 
-    const entity = new Entity({ ...item })
-    const entitySanitized = entity.sanitizeItem()
-
-    if (entitySanitized) {
-      const isEvent = item.type === 'event'
-
-      if (isEvent) {
-        delete entitySanitized.userId
-      }
-      if (!isEvent) {
-        delete entitySanitized.eventOwnerId
-      }
-      let { PK, ...restEntity } = entitySanitized
-
-      PK = isEvent
-        ? PK + '-' + entitySanitized.type
-        : PK + '-' + entitySanitized.userId
-
-      return {
-        [`${entitySanitized.type}Id`]: PK,
-        ...restEntity,
-      }
-    }
+    return item
   }
 
   toItem() {
@@ -107,13 +90,13 @@ module.exports = class Entity {
         return sanitizeEventItem
       }
       case 'booking': {
-        const sanitizeEventItem = {}
+        const sanitizeBookingItem = {}
         ENTITY_BOOKING_PROPERTIES.forEach((property) => {
           property === 'id'
-            ? (sanitizeEventItem.PK = this.eventId)
-            : (sanitizeEventItem[property] = this[property])
+            ? (sanitizeBookingItem.PK = this.eventId.split('-')[0])
+            : (sanitizeBookingItem[property] = this[property])
         })
-        return sanitizeEventItem
+        return sanitizeBookingItem
       }
     }
   }

@@ -2,7 +2,7 @@ const middy = require('@middy/core')
 const httpErrorHandler = require('@middy/http-error-handler')
 const EntityService = require('../../common/service/entityService')
 const bodyValidation = require('../../common/middlewares/requestBodyValidator')
-const formDataParser = require('../../common/middlewares/formDataParser')
+const multipartBodyParser = require("@middy/http-multipart-body-parser");
 const customErrors = require('../../common/middlewares/customError')
 const S3Service = require('../../common/service/s3Services')
 const queryParser = require('../utils/queryParser')
@@ -49,7 +49,7 @@ const handler = async (event, context) => {
 }
 
 module.exports.handler = middy()
-  .use(formDataParser())
+  .use(multipartBodyParser())
   .use(bodyValidation())
   .use(customErrors())
   .use(httpErrorHandler())

@@ -44,7 +44,7 @@ module.exports = class DynamoDbAdapter {
         const localRegion = process.env.MOCK_DYNAMODB_ENDPOINT
           ? 'local'
           : process.env.REGION
-
+        console.log({ localEndpoint })
         const localConfig = {
           endpoint: localEndpoint,
           sslEnabled: false,

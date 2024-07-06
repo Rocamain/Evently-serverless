@@ -10,7 +10,12 @@
     "style:lint": "eslint '**/*.js'",
     "style:prettier": "prettier --check '**/*.js'",
     "pretty:fix": "prettier --write '**/*.js'",
-    "offline": "sls offline start --noAuth ",
+    "offline": "sls offline start --noAuth",
+    "db:create": "sls dynamodb install",
+    "db:remove": "sls dynamodb remove",
+    "db:migrate": "sls dynamodb migrate",
+    "update": "serverless update",
+    "deploy": "sls deploy",
     "deploy:dev": "sls deploy -s dev",
     "deploy:prod": "sls deploy -s prod",
     "export-env-local": "sls export-env --all",
@@ -21,7 +26,7 @@
     "e2e-get-item-by:test": "jest --config config/end2end/e2e.get-item-by.jest.config.js",
     "int:test": "jest --config config/integration/int.jest.config.js",
     "int:test-local": "npm run export-env-local && jest --config config/integration/int.jest.config.js",
-    "test": "npm int:test && npm e2e:test"
+    "test": "npm run int:test && npm run e2e:test"
   },
   "keywords": [],
   "author": "Francisco Javier Roca",
@@ -31,6 +36,7 @@
     "@aws-sdk/lib-dynamodb": "^3.312.0",
     "@aws-sdk/node-http-handler": "^3.310.0",
     "axios": "^1.4.0",
+    "dotenv": "^16.4.5",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-config-standard": "^17.0.0",
@@ -43,12 +49,8 @@
     "jest-dynalite": "^3.6.1",
     "kill-port": "^2.0.1",
     "prettier": "^2.8.7",
-    "serverless": "^3.32.2",
     "serverless-dynamodb": "^0.2.43",
-    "serverless-esbuild": "^1.48.4",
-    "serverless-export-env": "^2.2.0",
-    "serverless-iam-roles-per-function": "^3.2.0",
-    "serverless-offline": "^12.0.4"
+    "serverless-iam-roles-per-function": "^3.2.0"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.359.0",
@@ -57,10 +59,11 @@
     "@middy/http-error-handler": "^4.3.0",
     "@middy/http-header-normalizer": "^4.5.2",
     "@middy/http-json-body-parser": "^4.3.0",
+    "@middy/http-multipart-body-parser": "^4.7.0",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "ksuid": "^3.0.0",
-    "lambda-multipart-parser": "^1.0.1",
-    "sharp": "^0.32.6"
+    "serverless": "^4.1.11",
+    "serverless-offline": "^13.6.0"
   }
 }

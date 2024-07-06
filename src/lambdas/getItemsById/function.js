@@ -8,7 +8,7 @@ const paramsValidator = require('../../common/middlewares/paramsValidator')
 
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
-  const id = event.pathParameters.id.split('-')[0]
+  const id = event.pathParameters.id
 
   const myEntityService = new EntityService()
 
@@ -32,6 +32,6 @@ const handler = async (event, context) => {
 module.exports.handler = middy()
   .use(paramsValidator())
   .use(httpJsonBodyParser())
-  .use(customErrors())
   .use(httpErrorHandler())
   .handler(handler)
+  .use(customErrors())
