@@ -8,8 +8,6 @@ module.exports = ({
   value,
   field,
 }) => {
-  const FIVE_MINUTES = 300000
-
   let filterExpression = ''
   let expression = '#field = :value'
   const expressionAttributeNames = {
@@ -18,41 +16,39 @@ module.exports = ({
   const expressionAttributeValues = {
     ':value': value,
   }
-  if (!includePast) {
-    expression = '#field = :value AND #field2 >= :value2'
+  console.log({
+    includePast,
+    condition: !includePast || includePast !== 'true' || includePast !== true,
+  })
+  if (includePast === false) {
+    expression = '#field = :value AND #field2 > :value2'
     expressionAttributeNames['#field2'] = 'eventDateAndTime'
-    expressionAttributeValues[':value2'] = new Date(
-      new Date().getTime() + FIVE_MINUTES,
-    ).toISOString()
+    expressionAttributeValues[':value2'] = new Date().toISOString()
   }
 
   if (fromDate) {
     expression = '#field = :value AND #field2 >= :value2'
     expressionAttributeNames['#field2'] = 'eventDateAndTime'
-    expressionAttributeValues[':value2'] = new Date(
-      new Date(fromDate).getTime() + FIVE_MINUTES,
-    ).toISOString()
+    expressionAttributeValues[':value2'] = new Date(fromDate).toISOString()
 
     if (toDate) {
-      delete expressionAttributeNames['#field2']
       delete expressionAttributeValues[':value2']
-      expression =
-        '#field = :value AND eventDateAndTime BETWEEN :fromDate AND :toDate'
-      expressionAttributeValues[':fromDate'] = fromDate
-      expressionAttributeValues[':toDate'] = toDate
+      expression = '#field = :value AND #field2 BETWEEN :fromDate AND :toDate'
+      expressionAttributeValues[':fromDate'] = new Date(fromDate).toISOString()
+      expressionAttributeValues[':toDate'] = new Date(toDate).toISOString()
     }
   }
 
   if (!fromDate && toDate) {
     expression = '#field = :value AND #field2 BETWEEN :fromDate AND :value2'
 
-    expressionAttributeValues[':fromDate'] = new Date(
-      new Date().getTime() + FIVE_MINUTES,
-    ).toISOString()
-    expressionAttributeValues[':value2'] = toDate
+    expressionAttributeValues[':fromDate'] = new Date().toISOString()
+    expressionAttributeValues[':value2'] = new Date(toDate).toISOString()
     if (includePast) {
       delete expressionAttributeValues[':fromDate']
-      expression = '#field = :value AND eventDateAndTime <= :value2'
+      expressionAttributeValues[':value2'] = toDate
+      expressionAttributeNames['#field2'] = 'eventDateAndTime'
+      expression = '#field = :value AND #field2 <= :value2'
     }
   }
 
@@ -98,6 +94,7 @@ module.exports = ({
     // Remove leading 'AND' from filterExpression
     filterExpression = filterExpression.replace(/^ AND /, '')
   }
+
   return {
     expression,
     expressionAttributeNames,

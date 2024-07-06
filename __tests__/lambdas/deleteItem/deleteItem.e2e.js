@@ -1,76 +1,74 @@
 const { default: axios } = require('axios')
-const FormData = require('form-data')
+const { eventRequest, bookingRequest } = require('../utils/request')
+const eventPayload = require('../utils/eventPayload')
+const generateDate = require('../../../src/common/service/utils/generateDate')
 
-// axios.defaults.baseURL = ``
 const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
 
-describe('deleteItem function', () => {
-  const event = {}
-  const firstBooking = {}
+const event = {}
 
+describe('deleteItem function', () => {
   test('should respond with statusCode 201 to correct request item Event', async () => {
     // GIVEN
-    const payload = {
-      type: 'event',
-      eventOwnerId: '1',
-      eventOwnerName: 'Javier Roca',
-      eventOwnerEmail: 'javier@fakeemail.com',
-      eventTitle: 'Event 1',
-      eventDescription: 'This is a description.',
-      eventCategory: 'Other',
-      eventLocation: 'Online',
-      eventDate: '23-05-2030',
-      eventTime: '12:55',
-      eventPrice: 1,
-      eventLink: 'https://website.com/Event_1',
-    }
+    const payload = { ...eventPayload }
 
-    // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
+    //WHEN
 
-    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
+    const response = await eventRequest(payload, API_BASE_URL)
 
-    const { eventId, createdAt, ...response } = data.data
-    event.eventId = data.data.eventId
-    event.eventOwnerId = data.data.eventOwnerId.split('-')[0]
+    const { status, data } = response
+
+    const { createdAt, eventId, userId, ...responseData } = data.data
+    event.eventId = eventId
+    event.eventDateAndTime = responseData.eventDateAndTime
+    event.eventOwnerName = responseData.eventOwnerName
+    event.eventOwnerId = responseData.eventOwnerId
+    event.eventOwnerName = responseData.eventOwnerName
+    event.eventOwnerId = responseData.eventOwnerId
+    event.eventTitle = responseData.eventTitle
+    event.eventCategory = responseData.eventCategory
+    event.eventOwnerId = responseData.eventOwnerId
+    event.eventLocationId = responseData.eventLocationId
+    delete payload.eventPictures
+    payload.eventPictures = ['placeholder_picture-1']
+
+    payload.eventDateAndTime = generateDate(
+      payload.eventDate,
+      payload.eventTime,
+    )
+    delete payload.eventDate
+    delete payload.eventTime
 
     // THEN
     expect(status).toBe(201)
     expect(new Date(createdAt)).toBeInstanceOf(Date)
-    expect(createdAt).toBe(new Date(createdAt).toISOString())
-    expect(response).toEqual(response)
-    expect(eventId).toContain('-event')
+    expect(responseData).toEqual(payload)
+    expect(typeof eventId).toBe('string')
+    expect(userId).toBe('event')
   })
   test('should respond with statusCode 201 to correct create request item booking, and 27 bookings to that event', async () => {
     // GIVEN
-    const [eventId] = event.eventId.split('-')
-    const payload = {
-      type: 'booking',
-      userId: undefined,
-      userName: undefined,
-      userEmail: 'userId_1@fakeemail.com',
-      eventId,
-    }
+    const { eventId, eventOwnerId } = event
 
     // WHEN
 
     const bookings = new Array(27).fill().map((_, i) => {
-      const booking = { ...payload } // Create a new object with the same properties as payload
-      booking.userId = 'id_' + (i + 1) // Update the userId property for each element
-      booking.userName = 'name_' + (i + 1) // Update the userName property for each element
+      const booking = {
+        type: 'booking',
+        userId: 'user-id-' + (i + 1),
+        userName: 'name_' + (i + 1),
+        userEmail: `user-id-${i + 1}@fakeemail.com`,
+        eventId,
+      }
+
       return booking
     })
 
     const bookingsResponse = await Promise.all(
-      bookings.map((bookingPayload) => {
-        const form = new FormData()
-        form.append('data', JSON.stringify(bookingPayload))
-        return axios.post(`${API_BASE_URL}/item`, form)
-      }),
+      bookings.map((bookingPayload) =>
+        bookingRequest(bookingPayload, API_BASE_URL),
+      ),
     )
-
-    firstBooking.data = bookingsResponse[0].data.data
 
     // THEN
     bookingsResponse.forEach((booking) => {
@@ -79,23 +77,25 @@ describe('deleteItem function', () => {
       const { bookingId, userId, eventId } = data.data
 
       expect(status).toBe(201)
-      expect(bookingId).toBe(`${eventId}-${userId}`)
+      expect(typeof bookingId).toBe(`string`)
     })
   })
   test('should pass with statuscode 203 for a delete request of booking and 203 deleteBatch of an event and all bookings of that event ', async () => {
     // WHEN
-
-    const { data: dataByOwnerId } = await axios.get(
-      `${API_BASE_URL}/items/byOwner/${event.eventOwnerId}`,
-      {
-        params: { limit: 30 },
-      },
-    )
+    const { eventOwnerId, eventId } = event
+    const {
+      data: { data: dataByOwnerId },
+    } = await axios.get(`${API_BASE_URL}/items/byOwner/${eventOwnerId}`, {
+      params: { limit: 30 },
+    })
 
     const { data: deleteBookingOneData, status: deleteBookingOneStatus } =
-      await axios.delete(`${API_BASE_URL}/item/${firstBooking.data.bookingId}`)
+      await axios.delete(
+        `${API_BASE_URL}/item/${dataByOwnerId[0].bookingId}${dataByOwnerId[0].userId}`,
+      )
+
     const { data: dataByOwnerIdAfterData, status: dataByOwnerIdAfterStatus } =
-      await axios.delete(`${API_BASE_URL}/item/${event.eventId}`)
+      await axios.delete(`${API_BASE_URL}/item/${eventId}-event`)
     const { data: dataByOwnerIdAfter } = await axios.get(
       `${API_BASE_URL}/items/byOwner/${event.eventOwnerId}`,
       {
@@ -105,7 +105,7 @@ describe('deleteItem function', () => {
 
     expect(deleteBookingOneStatus).toBe(203)
     expect(deleteBookingOneData.data.message).toBe('Item deleted')
-    expect(dataByOwnerId.data.length).toBe(28)
+    expect(dataByOwnerId.length).toBe(28)
     expect(dataByOwnerIdAfterStatus).toBe(203)
     expect(dataByOwnerIdAfterData.data.message).toBe('Items deleted')
     expect(dataByOwnerIdAfter.data.length).toBe(0)

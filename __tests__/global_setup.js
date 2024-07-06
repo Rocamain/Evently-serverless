@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'test'
 const { setup } = require('jest-dev-server')
 
 module.exports = async function globalSetup() {

@@ -1,24 +1,23 @@
 const middy = require('@middy/core')
-const formDataParser = require('../../common/middlewares/formDataParser')
 const customErrors = require('../../common/middlewares/customError')
 const httpErrorHandler = require('@middy/http-error-handler')
-const S3Service = require('../../common/service/s3Services')
-
+const CognitoService = require('../../common/service/cognitoService')
+const multipartBodyParser = require("@middy/http-multipart-body-parser");
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
 
+  const { email, password, name, surname } = event.body
 
-  const { email, password, name, surname, files } = event.body
-  const cognitoService = S3Service()
+  const cognitoService = new CognitoService()
   await cognitoService.createNewUser({
     email,
     password,
     name,
     surname,
-    file: files[0],
+    file: event.body['profile picture'],
   })
 
-
+  console.log(`${context.functionName} function complete`)
   return {
     statusCode: 201,
     headers: {
@@ -31,9 +30,8 @@ const handler = async (event, context) => {
   }
 }
 
-
 module.exports.handler = middy()
-  .use(formDataParser())
+  .use(parser())
   .use(customErrors())
   .use(httpErrorHandler())
   .handler(handler)
