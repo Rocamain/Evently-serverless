@@ -3,19 +3,21 @@ frameworkVersion: '3'
 
 plugins:
   - serverless-iam-roles-per-function
-  - serverless-offline
   - serverless-dynamodb
+  - serverless-offline 
   - serverless-export-env
+  
 provider:
   name: aws
+  runtime: nodejs18.x
   region: eu-west-2
   stage: ${opt:stage, self:custom.default_stage}
-  runtime: nodejs18.x
   environment:
     REGION: ${self:provider.region}
-    STAGE: ${self:provider.stage}
+    STAGE: ${self:provider.stage}getby
     SERVICE: ${self:service}
     httpApiGatewayEndpointId: !Ref HttpApi
+    
   httpApi:
     cors: true
     authorizers:
@@ -23,7 +25,7 @@ provider:
         identitySource: $request.header.Authorization
         issuerUrl:
           Fn::Sub:
-            - 'https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}'
+            - "https://cognito-idp.${self:provider.region}.amazonaws.com/${UserPoolId}"
             - UserPoolId: !Ref UserPool
         audience:
           - !Ref UserPoolClient
@@ -33,16 +35,16 @@ custom:
   description: Evently. The apps for events
   default_stage: local
   userPoolId: !Ref UserPool
-  bucketName: ${self:service}-public-photos-${sls:stage}
+  bucketName: ${self:service}-public-evently-photos-${sls:stage}
   audience: !Ref UserPoolClient
   serverless-offline:
-    host: 'localhost'
+    host: "localhost"
     httpPort: 4000
     lambdaPort: 4001
     port: 4000
     allowCache: true
     noPrependStageInUrl: true
-
+  
   serverless-dynamodb:
     stages:
       - local
@@ -50,6 +52,7 @@ custom:
       host: 127.0.0.1
       port: 8000
       heapInitial: 200m
+      inMemory: true,
       heapMax: 1g
       migrate: true
       convertEmptyValues: true
@@ -58,23 +61,15 @@ custom:
       statements:
         - Effect: Allow
           Action:
-            - 's3:*'
-          Resource: 'arn:aws:s3:::${self:service}-public-photos-${sls:stage}'
-  esbuild:
-    # keep existing configurations
-    external:
-      - sharp
-    packagerOptions:
-      scripts:
-        - npm install --arch=x64 --platform=linux sharp
-# package:
-#   individually: true
-#   patterns: include
-#     - src/**
-
-#     exclude
-#     - '!*'
-#     - '!__tests__/**'
+            - "s3:*"
+          Resource: "arn:aws:s3:::${self:service}-public-evently-photos-${sls:stage}"
+        - Effect: Allow
+          Action:
+          - cognito-idp:AdminInitiateAuth
+          - cognito-idp:AdminCreateUser
+          - cognito-idp:AdminSetUserPassword
+          - cognito-idp:AdminUpdateUserAttributes
+          Resource: "*"
 
 functions:
   join:
@@ -82,7 +77,7 @@ functions:
     handler: src/lambdas/join/function.handler
     description: register to ${self:service}-${self:provider.stage}
     memorySize: 128
-    timeout: 30
+    timeout: 20
     events:
       - httpApi:
           method: POST
@@ -98,7 +93,8 @@ functions:
           - cognito-idp:AdminInitiateAuth
           - cognito-idp:AdminCreateUser
           - cognito-idp:AdminSetUserPassword
-        Resource: '*'
+          - cognito-idp:AdminUpdateUserAttributes
+        Resource: "*"
   login:
     name: ${self:service}-${self:provider.stage}-login
     handler: src/lambdas/login/function.handler
@@ -118,13 +114,36 @@ functions:
         Effect: Allow
         Action:
           - cognito-idp:AdminInitiateAuth
-        Resource: '*'
+        Resource: "*"
+  getUser:
+    name: ${self:service}-${self:provider.stage}-getuser
+    handler: src/lambdas/getUser/function.handler
+    description: get user from ${self:service}-${self:provider.stage}
+    memorySize: 128
+    events:
+      - httpApi:
+          method: GET
+          path: /getuser
+          authorizer:
+            name: userAuthorizer
+    environment:
+      USER_POOL_ID:
+        Ref: UserPool
+      CLIENT_ID:
+        Ref: UserPoolClient
+    iamRoleStatements:
+      - Sid: CognitoInit
+        Effect: Allow
+        Action:
+          - cognito-idp:AdminGetUser
+        Resource: "*"
+
   savePhoto:
     name: ${self:service}-${self:provider.stage}-save-photo
     handler: src/lambdas/savePhoto/function.handler
     description: Save photo in s3
     memorySize: 256
-    timeout: 30
+    timeout: 20
     environment:
       BUCKET_NAME: ${self:custom.bucketName}
     events:
@@ -135,7 +154,7 @@ functions:
     name: ${self:service}-${self:provider.stage}-create-item
     handler: src/lambdas/createItem/function.handler
     description: Create Item in repository
-    memorySize: 128
+    memorySize: 256
     timeout: 25
     environment:
       tableName: ${self:custom.tableName}
@@ -166,9 +185,9 @@ functions:
           path: /item/{id}
           method: GET
     iamRoleStatements:
-      - Effect: 'Allow'
+      - Effect: "Allow"
         Action:
-          - 'DynamoDB:GetItem'
+          - "dynamodb:GetItem"
         Resource: !GetAtt eventlyTable.Arn
   getItemsByOwner:
     name: ${self:service}-${self:provider.stage}-get-items-by-owner
@@ -185,9 +204,9 @@ functions:
           path: /items/byOwner/{id}
           method: GET
     iamRoleStatements:
-      - Effect: 'Allow'
+      - Effect: "Allow"
         Action:
-          - 'DynamoDB:GetItem'
+          - "DynamoDB:GetItem"
         Resource: !GetAtt eventlyTable.Arn
   getItemsByUser:
     name: ${self:service}-${self:provider.stage}-get-items-by-event-owner
@@ -204,9 +223,9 @@ functions:
           path: /items/byUser/{id}
           method: GET
     iamRoleStatements:
-      - Effect: 'Allow'
+      - Effect: "Allow"
         Action:
-          - 'DynamoDB:GetItem'
+          - "DynamoDB:GetItem"
         Resource: !GetAtt eventlyTable.Arn
   DeleteItem:
     name: ${self:service}-${self:provider.stage}-delete-item
@@ -223,9 +242,9 @@ functions:
           authorizer:
             name: userAuthorizer
     iamRoleStatements:
-      - Effect: 'Allow'
+      - Effect: "Allow"
         Action:
-          - 'DynamoDB:DeleteItem'
+          - "DynamoDB:DeleteItem"
         Resource: !GetAtt eventlyTable.Arn
   updateItem:
     name: ${self:service}-${self:provider.stage}-update-item
@@ -266,17 +285,17 @@ resources:
         AutoVerifiedAttributes:
           - email
         Schema:
-          - Name: 'family_name'
+          - Name: "family_name"
             Required: true
             Mutable: true
-          - Name: 'name'
+          - Name: "name"
             Required: true
             Mutable: true
         Policies:
           PasswordPolicy:
             MinimumLength: 8
     UserPoolClient:
-      Type: 'AWS::Cognito::UserPoolClient'
+      Type: AWS::Cognito::UserPoolClient
       Properties:
         ClientName: ${self:service}-${sls:stage}-UserPoolClient
         GenerateSecret: false
@@ -285,7 +304,7 @@ resources:
         AccessTokenValidity: 10
         IdTokenValidity: 10
         ExplicitAuthFlows:
-          - 'ADMIN_NO_SRP_AUTH'
+          - "ADMIN_NO_SRP_AUTH"
     eventlyTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -310,8 +329,7 @@ resources:
             Value: ${self:service}
           - Key: Stage
             Value: ${self:provider.stage}
-          - Key: StackName
-            Value: !Ref AWS::StackId
+        
 
         GlobalSecondaryIndexes:
           - IndexName: eventOwnerId
@@ -334,7 +352,7 @@ resources:
     PhotoBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:service}-public-photos-${sls:stage}
+        BucketName: ${self:service}-public-evently-photos-${sls:stage}
         PublicAccessBlockConfiguration:
           BlockPublicAcls: false
         OwnershipControls:
@@ -345,12 +363,12 @@ resources:
       Properties:
         Bucket: !Ref PhotoBucket
         PolicyDocument:
-          Version: '2012-10-17'
+          Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Action:
-                - 's3:GetObject'
-                - 's3:PutObject'
+                - "s3:GetObject"
+                - "s3:PutObject"
               Resource:
-                - !Join ['/', [!GetAtt [PhotoBucket, Arn], '*']]
-              Principal: '*'
+                - !Join ["/", [!GetAtt [PhotoBucket, Arn], "*"]]
+              Principal: "*"

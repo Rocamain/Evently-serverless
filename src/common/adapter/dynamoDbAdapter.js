@@ -8,7 +8,7 @@ const {
   UpdateCommand,
   BatchWriteCommand,
 } = require('@aws-sdk/lib-dynamodb')
-const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
+const { NodeHttpHandler } = require('@smithy/node-http-handler')
 const https = require('https')
 const createFilterExpression = require('./utils/createFilterExpression.js')
 const getUniqueCombinations = require('./utils/getUniqueCombinations')
@@ -44,7 +44,7 @@ module.exports = class DynamoDbAdapter {
         const localRegion = process.env.MOCK_DYNAMODB_ENDPOINT
           ? 'local'
           : process.env.REGION
-
+        console.log({ localEndpoint })
         const localConfig = {
           endpoint: localEndpoint,
           sslEnabled: false,

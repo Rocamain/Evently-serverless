@@ -13,68 +13,91 @@ module.exports = class EntityService {
     this.field = field
   }
 
-  async createEvent(event, files) {
-    event.id = generateId()
-    // const { IS_OFFLINE } = process.env
-
-    if (files.length) {
-      event.eventPhotos = await this.s3Service.saveEventPictures({
-        files,
-        eventId: event.id,
-      })
-    } else {
-      event.eventPhotos = ['placeholder.com/hello.webp']
+  async createEvent(data, files) {
+    data.id = generateId()
+    console.log({ 'Running Event Service wit data...': files, data })
+    if (!files) {
+      return { message: 'To create an event, pictures are required' }
     }
 
-    const response = await this.create(event)
+    if (process.env.NODE_ENV === 'prod' || process.env.NODE_ENV === 'dev') {
+      data.eventPictures = await this.s3Service.saveEventPictures({
+        files,
+        eventId: data.id,
+      })
+    } else {
+      // Block for test, to avoid making calls to the api, saving cost
+      data.eventPictures = []
+      if (Array.isArray(files)) {
+        files.forEach((file, index) => {
+          data.eventPictures.push(
+            'placeholder_picture' + '-' + Number(index + 1),
+          )
+        })
+      } else {
+        data.eventPictures.push('placeholder_picture-1')
+      }
+    }
+    const response = await this.create(data)
 
     return response
   }
 
   async createBooking(booking) {
+    console.log({ 'Running Booking Service with data...': booking })
     const { eventId, ...restRequestBody } = booking
-    const eventInfo = await this.get(eventId, 'event')
-
-    if (eventInfo && Object.keys(eventInfo.data).length) {
-      const {
-        eventLocation,
-        eventDateAndTime,
-        eventOwnerId,
-        eventOwnerName,
-        eventTitle,
-        eventCategory,
-      } = eventInfo.data
-
-      booking = {
-        eventDateAndTime,
-        eventOwnerId,
-        eventOwnerName,
-        eventLocation,
-        eventTitle,
-        eventCategory,
-        eventId,
-        ...restRequestBody,
-      }
-
-      return await this.create(booking)
-    } else {
+    if (!eventId) {
       const error = new Error()
       error.message = 'Event does not exist'
       error.name = 'ValidationException'
       throw error
     }
+    const id = eventId.split('-event')[0]
+
+    const eventInfo = await this.get(id, 'event')
+    console.log({ id, eventInfo })
+    const existEvent = Object.keys(eventInfo.data).length !== 0
+
+    if (!existEvent) {
+      const error = new Error()
+      error.message = 'Event does not exist'
+      error.name = 'ValidationException'
+      throw error
+    }
+
+    const {
+      eventLocationId,
+      eventDateAndTime,
+      eventOwnerId,
+      eventOwnerName,
+      eventTitle,
+      eventCategory,
+    } = eventInfo.data
+
+    booking = {
+      eventDateAndTime,
+      eventOwnerId,
+      eventOwnerName,
+      eventLocationId,
+      eventTitle,
+      eventCategory,
+      eventId,
+      ...restRequestBody,
+    }
+
+    return await this.create(booking)
   }
 
-  async create(requestBody) {
+  async create(data) {
     console.log(
-      `Creating entity item in repository on table ${process.env.tableName}`,
+      `Creating entity item in repository on table ${
+        process.env.tableName
+      } with this data: ${JSON.stringify(data)}`,
     )
 
-    const entityItem = new Entity(requestBody).toItem()
+    const entityItem = new Entity(data).toItem()
 
     await this.dynamoDbAdapter.createItem(this.tableName, entityItem)
-
-    console.log('item created')
 
     return { data: Entity.fromItem(entityItem) }
   }
@@ -135,10 +158,16 @@ module.exports = class EntityService {
     }
   }
 
-  async queryByGlobalIndex(id, params) {
+  async queryByGlobalIndex(id, queries) {
     console.log(
       `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,
     )
+    console.log({
+      indexName: this.indexName,
+      field: this.field,
+      value: id,
+      ...queries,
+    })
 
     const response = await this.dynamoDbAdapter.queryIndexByField(
       this.tableName,
@@ -146,10 +175,10 @@ module.exports = class EntityService {
         indexName: this.indexName,
         field: this.field,
         value: id,
-        ...params,
+        ...queries,
       },
     )
-    console.log('service global index', { response })
+
     const items = response.Items
     const lastEvaluatedKey = response.LastEvaluatedKey
 

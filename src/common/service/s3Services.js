@@ -6,23 +6,26 @@ module.exports = class S3Service {
   }
 
   async saveEventPictures({ files, eventId }) {
-    const response = await Promise.all(
-      files.map((file, index) => {
-        return this.S3Adapter.saveEventPhoto({
-          file,
-          eventId,
-          picId: `EventPicture${index + 1}`,
-        })
-      }),
-    )
-
-    return response
+    console.log('saving event pictures', { files, eventId })
+    try {
+      const eventPictures = await Promise.all(
+        files.map((file, index) => {
+          return this.S3Adapter.saveEventPhoto({
+            file,
+            eventId,
+            picId: `EventPicture$-${index + 1}`,
+          })
+        }),
+      )
+      console.log('saving pictures ', eventPictures)
+      return eventPictures
+    } catch (error) {
+      console.log('saving pictures error', error)
+      return error
+    }
   }
 
   async saveFile({ type, files, id }) {
-    // const { IS_OFFLINE } = process.env
-
-    // due to limitation of number of requests to AWS, on development will not make a call to the service
     if (files.length === 0 || !id) {
       const message = !id ? 'id is required' : 'photo file is required'
       return {
@@ -39,7 +42,6 @@ module.exports = class S3Service {
       }
     }
 
-    // if (!IS_OFFLINE) {
     try {
       const response = await Promise.all(
         files.map((file, index) =>

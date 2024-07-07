@@ -1,10 +1,13 @@
 module.exports = (date, time) => {
   if (date && time) {
-    const [day, month, year] = date.split('-')
+    const [year, month, day] = date.split('-')
 
     let [hours, minutes] = time.split(':')
     if (minutes[0] === '0') {
       minutes = minutes[1]
+    }
+    if (hours[0] === '0') {
+      hours = hours[1]
     }
     const eventDate = [
       Number(year),

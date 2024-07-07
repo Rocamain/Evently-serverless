@@ -1,137 +1,94 @@
 const { default: axios } = require('axios')
-const FormData = require('form-data')
+const { eventRequest, bookingRequest } = require('../utils/request')
+const eventPayload = require('../utils/eventPayload')
 
-// axios.defaults.baseURL = ``
 const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
 
 describe('getItemBy function', () => {
-  const eventToBookOne = {}
-  const pastBookingToBookOne = {}
+  const event = {}
+  const pastEvent = {}
+  const eventOwnerIdOne = 'get_By_Owner_Id_owner_1'
+  const eventOwnerIdtwo = 'get_By_Owner_Id_owner_2'
 
   // FIRST WE CREATE SOME ITEMS TO LATER DO A GET REQUEST
   describe('getItemBy eventOwnerId', () => {
     test('should respond with statusCode 200 to correct request all items byOwner', async () => {
       // GIVEN
-      const payloadEventOne = {
-        type: 'event',
-        eventOwnerId: '1',
-        eventOwnerName: 'Javier Roca',
-        eventOwnerEmail: 'javier@fakeemail.com',
-        eventTitle: 'Event 1',
-        eventDescription: 'This is a description.',
-        eventCategory: 'Other',
-        eventLocation: 'Online',
-        eventDate: '23-05-2030',
-        eventTime: '12:55',
-        eventPrice: 1,
-        eventLink: 'https://website.com/Event_1',
-      }
-      const payloadEventTwo = {
-        type: 'event',
-        eventOwnerId: '1',
-        eventOwnerName: 'Javier Roca',
-        eventOwnerEmail: 'javier@fakeemail.com',
-        eventCategory: 'Other',
-        eventTitle: 'Event 2',
-        eventDescription: 'This is a description.',
-        eventLocation: 'Online',
-        eventDate: '27-05-2030',
-        eventTime: '12:55',
-        eventPrice: 5,
-        eventLink: 'https://website.com/Event_2',
-      }
-      const payloadEventThree = {
-        type: 'event',
-        eventOwnerId: '2',
-        eventOwnerName: 'francisco vazquez',
-        eventOwnerEmail: 'francisco@fakeemail.com',
-        eventTitle: 'Event 3',
-        eventDescription: 'This is a description.',
-        eventCategory: 'Other',
-        eventLocation: 'Online',
-        eventDate: '25-05-2030',
-        eventTime: '12:55',
-        eventPrice: 10,
-        eventLink: 'https://website.com/Event_3',
-      }
 
-      const payloadEventFour = {
-        type: 'event',
-        eventOwnerId: '1',
-        eventOwnerName: 'Javier Roca',
-        eventOwnerEmail: 'javier@fakeemail.com',
-        eventTitle: 'Event 3',
-        eventDescription: 'This is a description.',
-        eventCategory: 'Other',
-        eventLocation: 'Online',
-        eventDate: '28-05-2030',
-        eventTime: '12:55',
-        eventPrice: 10,
-        eventLink: 'https://website.com/Event_3',
-      }
+      const payloadEventOne = { ...eventPayload }
+      payloadEventOne.eventTitle = '1'
+      payloadEventOne.eventOwnerId = eventOwnerIdOne
+      payloadEventOne.eventDate = '2030-09-25'
+
+      const payloadEventTwo = { ...eventPayload }
+      payloadEventTwo.eventTitle = '2'
+      payloadEventTwo.eventDate = '2031-09-25'
+      payloadEventTwo.eventOwnerId = eventOwnerIdtwo
+
+      const payloadEventThree = { ...eventPayload }
+      payloadEventThree.eventTitle = '3'
+      payloadEventThree.eventOwnerId = eventOwnerIdOne
+      payloadEventThree.eventDate = '2031-09-25'
+
+      const payloadEventFour = { ...eventPayload }
+      payloadEventFour.eventTitle = '4'
+      payloadEventFour.eventOwnerId = eventOwnerIdOne
+      payloadEventFour.eventDate = '2040-09-25'
+
       // WHEN
 
-      const formOne = new FormData()
-      formOne.append('data', JSON.stringify(payloadEventOne))
+      const responseEventOne = await eventRequest(payloadEventOne, API_BASE_URL)
+      console.log({ responseEventOne: responseEventOne.data.stackTrace })
+      payloadEventOne.eventPictures = ['placeholder_picture-1']
+      event.eventId = responseEventOne.data.data.eventId
 
-      const { status: statusOne, data: dataOne } = await axios.post(
-        `${API_BASE_URL}/item`,
-        formOne,
+      const responseEventTwo = await eventRequest(payloadEventTwo, API_BASE_URL)
+      payloadEventTwo.eventPictures = ['placeholder_picture-1']
+
+      const responseEventThree = await eventRequest(
+        payloadEventThree,
+        API_BASE_URL,
       )
+      payloadEventThree.eventPictures = ['placeholder_picture-1']
 
-      const formTwo = new FormData()
-      formTwo.append('data', JSON.stringify(payloadEventTwo))
-
-      const { status: statusTwo, data: dataTwo } = await axios.post(
-        `${API_BASE_URL}/item`,
-        formTwo,
+      const responseEventFour = await eventRequest(
+        payloadEventFour,
+        API_BASE_URL,
       )
-
-      const formThree = new FormData()
-      formThree.append('data', JSON.stringify(payloadEventThree))
-
-      const { status: statusThree, data: dataThree } = await axios.post(
-        `${API_BASE_URL}/item`,
-        formThree,
-      )
+      responseEventFour.eventPictures = ['placeholder_picture-1']
 
       // I will use this variable later to make booking as i need to have access to eventId, randomly generated
 
-      eventToBookOne.data = dataThree.data
-
-      const formFour = new FormData()
-      formFour.append('data', JSON.stringify(payloadEventFour))
-
-      const { status: statusFour, data: dataFour } = await axios.post(
-        `${API_BASE_URL}/item`,
-        formFour,
-      )
-
       const { status: statusByOwnerIdOne, data: dataByOwnerIdOne } =
-        await axios.get(
-          `${API_BASE_URL}/items/byOwner/${payloadEventOne.eventOwnerId}`,
-        )
+        await axios.get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`)
 
       const { status: statusByOwnerIdTwo, data: dataByOwnerIdTwo } =
-        await axios.get(
-          `${API_BASE_URL}/items/byOwner/${payloadEventThree.eventOwnerId}`,
-        )
+        await axios.get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdtwo}`)
+      dataByOwnerIdOne.data.sort((a, b) => a.eventTitle - b.eventTitle)
 
       const eventsEventOwnerIdOne = {
-        data: [{ ...dataOne.data }, { ...dataTwo.data }, { ...dataFour.data }],
+        data: [
+          { ...responseEventOne.data.data },
+          { ...responseEventThree.data.data },
+          { ...responseEventFour.data.data },
+        ],
       }
+      console.log({
+        dataByOwnerIdOne: dataByOwnerIdOne.data,
+        // eventsEventOwnerIdOne: eventsEventOwnerIdOne.data,
+      })
 
       const eventsEventOwnerIdTwo = {
-        data: [{ ...dataThree.data }],
+        data: [{ ...responseEventTwo.data.data }],
       }
 
       // THEN
 
       // events created status code
-      expect(statusOne).toBe(201)
-      expect(statusTwo).toBe(201)
-      expect(statusThree).toBe(201)
-      expect(statusFour).toBe(201)
+      expect(responseEventOne.status).toBe(201)
+      expect(responseEventTwo.status).toBe(201)
+      expect(responseEventThree.status).toBe(201)
+      expect(responseEventFour.status).toBe(201)
 
       // query by ownerId status code
 
@@ -142,11 +99,11 @@ describe('getItemBy function', () => {
       expect(dataByOwnerIdOne).toEqual(eventsEventOwnerIdOne)
       expect(dataByOwnerIdTwo).toEqual(eventsEventOwnerIdTwo)
     })
-    test('should respond with statusCode 200 to correct request alls items byOwner with query in params limit and later make a new request that use exclusiveStartKey (pagination wau in dynamodb)', async () => {
+    test('should respond with statusCode 200 to correct request alls items byOwner with query in params limit and later make a new request that use exclusiveStartKey (pagination in dynamodb)', async () => {
       // WHEN
 
       const { status: statusByOwnerIdOne, data: dataByOwnerIdOne } =
-        await axios.get(`${API_BASE_URL}/items/byOwner/1/`, {
+        await axios.get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}/`, {
           params: {
             limit: 1,
           },
@@ -158,7 +115,7 @@ describe('getItemBy function', () => {
       } = dataByOwnerIdOne
 
       const { status: statusByOwnerIdTwo, data: dataByOwnerIdTwo } =
-        await axios.get(`${API_BASE_URL}/items/byOwner/1`, {
+        await axios.get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`, {
           params: {
             limit: 4,
             lastPK: PK,
@@ -180,47 +137,37 @@ describe('getItemBy function', () => {
     })
     test('should respond with statusCode 200 to correct request alls items byOwner including the past bookings', async () => {
       // GIVEN
-      const payloadEventFive = {
-        type: 'event',
-        eventOwnerId: '1',
-        eventOwnerName: 'Javier Roca',
-        eventOwnerEmail: 'javier@fakeemail.com',
-        eventTitle: 'Event 1',
-        eventDescription: 'This is a description.',
-        eventCategory: 'Travel',
-        eventLocation: 'Online',
-        eventDate: '23-05-2012',
-        eventTime: '12:55',
-        eventPrice: 1,
-        eventLink: 'https://website.com/Event_1',
-      }
+      const payloadEventFive = { ...eventPayload }
+      payloadEventFive.eventTitle = '1'
+      payloadEventFive.eventOwnerId = eventOwnerIdOne
+      payloadEventFive.eventDate = '2000-01-24'
 
       // WHEN
 
-      const formEventFive = new FormData()
-      formEventFive.append('data', JSON.stringify(payloadEventFive))
-
-      const { status: statusFive, data: dataFive } = await axios.post(
-        `${API_BASE_URL}/item`,
-        formEventFive,
+      const responseEventFive = await eventRequest(
+        payloadEventFive,
+        API_BASE_URL,
       )
 
-      pastBookingToBookOne.data = dataFive.data
+      pastEvent.eventId = responseEventFive.data.data.eventId
+      payloadEventFive.eventPictures = ['placeholder_picture-1']
+
       const { status: statusByOwnerIdOnePast, data: dataByOwnerIdOnePast } =
-        await axios.get(`${API_BASE_URL}/items/byOwner/1`, {
+        await axios.get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`, {
           params: {
-            includePast: true,
+            includePast: 'true',
           },
         })
 
       const { status: statusByOwnerIdOne, data: dataByOwnerIdOne } =
-        await axios.get(`${API_BASE_URL}/items/byOwner/1`, {
+        await axios.get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`, {
           params: {
             includePast: false,
           },
         })
+
       // THEN
-      expect(statusFive).toBe(201)
+      expect(responseEventFive.status).toBe(201)
       expect(statusByOwnerIdOne).toBe(200)
       expect(dataByOwnerIdOne.data.length).toBe(3)
       expect(statusByOwnerIdOnePast).toBe(200)
@@ -248,131 +195,113 @@ describe('getItemBy function', () => {
       // WHEN
 
       const { status, data: dataByOwnerIdFromDate } = await axios.get(
-        `${API_BASE_URL}/items/byOwner/1
-          `,
+        `${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`,
         {
           params: {
-            fromDate: '25-05-2030',
+            fromDate: '2030-09-26',
           },
         },
       )
 
       const { data: dataByOwnerIdFromDateToDate } = await axios.get(
-        `${API_BASE_URL}/items/byOwner/1
-          `,
+        `${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`,
         {
           params: {
-            fromDate: '25-05-2030',
-            toDate: '28-05-2030',
+            fromDate: '2030-09-25',
+            toDate: '2031-09-26',
           },
         },
       )
 
       const { data: dataByOwnerIdToDate } = await axios.get(
-        `${API_BASE_URL}/items/byOwner/1
-          `,
+        `${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`,
         {
           params: {
-            toDate: '27-05-2030',
-          },
-        },
-      )
-      const { data: dataByOwnerIdToDateWithPast } = await axios.get(
-        `${API_BASE_URL}/items/byOwner/1
-          `,
-        {
-          params: {
-            toDate: '27-05-2030',
-            includePast: true,
+            toDate: '2030-09-26',
           },
         },
       )
 
+      const { data: dataByOwnerIdToDateWithPast } = await axios.get(
+        `${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`,
+        {
+          params: {
+            toDate: '2030-09-25',
+            includePast: true,
+          },
+        },
+      )
       // THEN
       expect(status).toBe(200)
       expect(dataByOwnerIdFromDate.data.length).toBe(2)
-      expect(dataByOwnerIdFromDateToDate.data.length).toBe(1)
+      expect(dataByOwnerIdFromDateToDate.data.length).toBe(2)
       expect(dataByOwnerIdToDate.data.length).toBe(1)
-      expect(dataByOwnerIdToDateWithPast.data.length).toBe(2)
+      expect(dataByOwnerIdToDateWithPast.data.length).toBe(1)
     })
 
     test('should respond with statusCode 400 to incorrect request with query params fromDate wrong format', async () => {
       // WHEN
 
       const { response } = await axios
-        .get(
-          `${API_BASE_URL}/items/byOwner/1
-          `,
-          {
-            params: {
-              fromDate: 'a',
-              includePast: true,
-            },
+        .get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`, {
+          params: {
+            fromDate: 'a',
+            includePast: true,
           },
-        )
+        })
         .catch((err) => err)
       const { status, data } = response
 
       // THEN
       expect(status).toBe(400)
       expect(data.error.name).toBe('ValidationException')
-      expect(data.error.message).toBe('must match format DD-MM-YYYY.')
+      expect(data.error.message).toBe('fromDate, must match format YYYY-MM-DD.')
     })
     test('should respond with statusCode 400 to incorrect request with query params includePast wrong format', async () => {
       // WHEN
 
       const { response } = await axios
-        .get(
-          `${API_BASE_URL}/items/byOwner/1
-          `,
-          {
-            params: {
-              includePast: 'yeah',
-            },
+        .get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`, {
+          params: {
+            includePast: 'yeah',
           },
-        )
+        })
         .catch((err) => err)
       const { status, data } = response
 
       // THEN
       expect(status).toBe(400)
       expect(data.error.name).toBe('ValidationException')
-      expect(data.error.message).toBe('must match format boolean.')
+      expect(data.error.message).toBe('includePast, must match format boolean.')
     })
     test('should respond with statusCode 400 to incorrect request with query params lastEventDateAndTime wrong format', async () => {
       // WHEN
 
       const { response } = await axios
-        .get(
-          `${API_BASE_URL}/items/byOwner/1
-          `,
-          {
-            params: {
-              lastEventDateAndTime: 'yeah',
-            },
+        .get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`, {
+          params: {
+            lastEventDateAndTime: 'yeah',
           },
-        )
+        })
         .catch((err) => err)
       const { status, data } = response
 
       // THEN
       expect(status).toBe(400)
       expect(data.error.name).toBe('ValidationException')
-      expect(data.error.message).toBe('must match format ISO8601.')
+      expect(data.error.message).toBe(
+        'lastEventDateAndTime, must match format ISO8601.',
+      )
     })
     test('should respond with statusCode 400 to incorrect request with query params lastEventDateAndTime with missing params', async () => {
       // WHEN
 
       const { response } = await axios
-        .get(
-          `${API_BASE_URL}/items/byOwner/1
-          `,
-          {
-            params: {
-              lastEventDateAndTime: '2025-03-25T12:55:00.000Z',
-            },
+        .get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`, {
+          params: {
+            lastEventDateAndTime: '2025-03-25T12:55:00.000Z',
           },
-        )
+        })
         .catch((err) => err)
       const { status, data } = response
 
@@ -387,22 +316,18 @@ describe('getItemBy function', () => {
       // WHEN
 
       const { response } = await axios
-        .get(
-          `${API_BASE_URL}/items/byOwner/1
-          `,
-          {
-            params: {
-              limit: 'two',
-            },
+        .get(`${API_BASE_URL}/items/byOwner/${eventOwnerIdOne}`, {
+          params: {
+            limit: 'two',
           },
-        )
+        })
         .catch((err) => err)
       const { status, data } = response
 
       // THEN
       expect(status).toBe(400)
       expect(data.error.name).toBe('ValidationException')
-      expect(data.error.message).toBe('limit, must be number.')
+      expect(data.error.message).toBe('limit, must be number,string.')
     })
   })
   describe('getItemBy userId', () => {
@@ -414,15 +339,12 @@ describe('getItemBy function', () => {
         userId: '1',
         userName: 'Javier Roca',
         userEmail: 'javier@fakeemail.com',
-        eventId: eventToBookOne.data.eventId.split('-')[0],
+        eventId: event.eventId,
       }
 
       // THEN
-      const formBookingOne = new FormData()
-      formBookingOne.append('data', JSON.stringify(payloadBookingOneUserOne))
-
       const { status: statusBookingOne, data: dataBookingOne } =
-        await axios.post(`${API_BASE_URL}/item`, formBookingOne)
+        await bookingRequest(payloadBookingOneUserOne, API_BASE_URL)
 
       const { status: statusByUserIdOne, data: dataByUserIdOne } =
         await axios.get(
@@ -434,6 +356,7 @@ describe('getItemBy function', () => {
           },
         )
       // THEN
+
       expect(statusBookingOne).toBe(201)
       expect(statusByUserIdOne).toBe(200)
       expect(dataByUserIdOne.data[0]).toEqual(dataBookingOne.data)
@@ -441,34 +364,32 @@ describe('getItemBy function', () => {
     })
     test('should respond with statusCode 200 to correct request all items byOwner', async () => {
       // GIVEN
-      const payloadBookingTwoUserOne = {
+      const payloadBookingTwoPast = {
         type: 'booking',
         userId: '1',
         userName: 'Javier Roca',
         userEmail: 'javier@fakeemail.com',
-        eventId: pastBookingToBookOne.data.eventId.split('-')[0],
+        eventId: pastEvent.eventId,
       }
 
       // WHEN
-      const formBookingTwo = new FormData()
-      formBookingTwo.append('data', JSON.stringify(payloadBookingTwoUserOne))
-
-      const { status: statusBookingTwo, data: dataBookingTwo } =
-        await axios.post(`${API_BASE_URL}/item`, formBookingTwo)
+      const { status: statusBookingTwoPast, data: dataBookingTwoPast } =
+        await bookingRequest(payloadBookingTwoPast, API_BASE_URL)
 
       const { status: statusByUserIdOne, data: dataByUserIdOne } =
         await axios.get(
-          `${API_BASE_URL}/items/byUser/${payloadBookingTwoUserOne.userId}`,
+          `${API_BASE_URL}/items/byUser/${payloadBookingTwoPast.userId}`,
           {
             params: {
               includePast: true,
             },
           },
         )
+      console.log(dataByUserIdOne.data)
       // THEN
-      expect(statusBookingTwo).toBe(201)
+      expect(statusBookingTwoPast).toBe(201)
       expect(statusByUserIdOne).toBe(200)
-      expect(dataByUserIdOne.data[0]).toEqual(dataBookingTwo.data)
+      expect(dataByUserIdOne.data[0]).toEqual(dataBookingTwoPast.data)
       expect(dataByUserIdOne.data.length).toBe(2)
     })
   })

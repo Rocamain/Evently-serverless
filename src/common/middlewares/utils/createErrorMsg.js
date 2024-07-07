@@ -1,4 +1,4 @@
-/* eslint-disable no-case-declarations */
+ 
 const createErrorMsg = ({
   keyword,
   instancePath,
@@ -18,10 +18,18 @@ const createErrorMsg = ({
       return `${field}, ${message}.`
     case 'minimum':
       return `${field}, ${message}.`
+    case 'pattern':
+      const msg = {
+        eventDate: 'eventDate must match format YYYY/MM/DD',
+        eventTime: 'eventTime must match format HH:MM',
+      }
+
+      return `${msg[field]}.`
     case 'format':
-      return `${message.replaceAll('"', '')}.`
+      return `${field}, ${message.replaceAll('"', '')}.`
     case 'additionalProperties':
       return `${message}.`
+
     default:
       return `${field}, ${message}.`
   }
