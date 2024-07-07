@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci --legacy-peer-deps
+          npm ci
           npm install -g serverless@3.39.0
           sls dynamodb install
 
