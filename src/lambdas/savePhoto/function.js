@@ -1,4 +1,4 @@
-const multipartBodyParser = require("@middy/http-multipart-body-parser");
+const multipartBodyParser = require("@middy/http-multipart-body-parser")
 const S3Service = require('../../common/service/s3Services')
 const middy = require('@middy/core')
 const httpErrorHandler = require('@middy/http-error-handler')
