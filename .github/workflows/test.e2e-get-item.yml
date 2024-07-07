@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci --legacy-peer-deps
-          npm install -g serverless
+          npm install -g serverless@3.39.0
           sls dynamodb install
 
       - name: Configure AWS Credentials

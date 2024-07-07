@@ -1,6 +1,5 @@
 service: aws-evently
-org: mentalmarlin
-app: "evently"
+frameworkVersion: '3'
 
 plugins:
   - serverless-iam-roles-per-function
@@ -10,12 +9,12 @@ plugins:
   
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs18.x
   region: eu-west-2
   stage: ${opt:stage, self:custom.default_stage}
   environment:
     REGION: ${self:provider.region}
-    STAGE: ${self:provider.stage}
+    STAGE: ${self:provider.stage}getby
     SERVICE: ${self:service}
     httpApiGatewayEndpointId: !Ref HttpApi
     
@@ -338,7 +337,7 @@ resources:
               - AttributeName: eventOwnerId
                 KeyType: HASH
               - AttributeName: eventDateAndTime
-                KeyType: SORT
+                KeyType: RANGE
             Projection:
               ProjectionType: ALL
 
@@ -347,7 +346,7 @@ resources:
               - AttributeName: userId
                 KeyType: HASH
               - AttributeName: eventDateAndTime
-                KeyType: SORT
+                KeyType: RANGE
             Projection:
               ProjectionType: ALL
     PhotoBucket:

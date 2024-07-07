@@ -63,7 +63,8 @@
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "ksuid": "^3.0.0",
-    "serverless": "^4.1.11",
+    "serverless": "^3.39.0",
+    "serverless-export-env": "^2.2.0",
     "serverless-offline": "^13.6.0"
   }
 }
