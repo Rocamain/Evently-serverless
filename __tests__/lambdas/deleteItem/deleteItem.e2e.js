@@ -15,6 +15,7 @@ describe('deleteItem function', () => {
     //WHEN
 
     const response = await eventRequest(payload, API_BASE_URL)
+    console.log(response.data)
 
     const { status, data } = response
 
