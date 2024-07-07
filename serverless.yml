@@ -52,7 +52,7 @@ custom:
       host: 127.0.0.1
       port: 8000
       heapInitial: 200m
-      inMemory: false,
+      inMemory: true,
       heapMax: 1g
       migrate: true
       convertEmptyValues: true

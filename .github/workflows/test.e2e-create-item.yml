@@ -23,8 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm install -g serverless
-          sls login
+          npm install -g serverless@3.39.0
           sls dynamodb install
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
