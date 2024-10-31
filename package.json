@@ -64,6 +64,7 @@
     "ajv": "^8.16.0",
     "ajv-formats": "^3.0.1",
     "ksuid": "^3.0.0",
-    "superagent": "^9.0.2"
+    "serverless": "^3.32.2",
+    "serverless-offline": "^13.6.0"
   }
 }

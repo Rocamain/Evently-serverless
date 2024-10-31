@@ -4,9 +4,9 @@ frameworkVersion: '3'
 plugins:
   - serverless-iam-roles-per-function
   - serverless-dynamodb
-  - serverless-offline 
-  - serverless-export-env
-  
+  - serverless-offline
+  # - serverless-export-env
+
 provider:
   name: aws
   runtime: nodejs18.x
@@ -17,7 +17,7 @@ provider:
     STAGE: ${self:provider.stage}getby
     SERVICE: ${self:service}
     httpApiGatewayEndpointId: !Ref HttpApi
-    
+
   httpApi:
     cors: true
     authorizers:
@@ -44,7 +44,7 @@ custom:
     port: 4000
     allowCache: true
     noPrependStageInUrl: true
-  
+
   serverless-dynamodb:
     stages:
       - local
@@ -329,7 +329,7 @@ resources:
             Value: ${self:service}
           - Key: Stage
             Value: ${self:provider.stage}
-        
+
 
         GlobalSecondaryIndexes:
           - IndexName: eventOwnerId
