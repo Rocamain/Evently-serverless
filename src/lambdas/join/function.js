@@ -3,6 +3,7 @@ const customErrors = require('../../common/middlewares/customError')
 const httpErrorHandler = require('@middy/http-error-handler')
 const CognitoService = require('../../common/service/cognitoService')
 const multipartBodyParser = require('@middy/http-multipart-body-parser')
+
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
 

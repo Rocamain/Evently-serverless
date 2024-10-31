@@ -9,12 +9,12 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs18.x
   region: eu-west-2
   stage: ${opt:stage, self:custom.default_stage}
   environment:
     REGION: ${self:provider.region}
-    STAGE: ${self:provider.stage}
+    STAGE: ${self:provider.stage}getby
     SERVICE: ${self:service}
     httpApiGatewayEndpointId: !Ref HttpApi
 
@@ -52,7 +52,7 @@ custom:
       host: 127.0.0.1
       port: 8000
       heapInitial: 200m
-      inMemory: false,
+      inMemory: true,
       heapMax: 1g
       migrate: true
       convertEmptyValues: true
