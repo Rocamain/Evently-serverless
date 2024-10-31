@@ -6,7 +6,7 @@ const multipartBodyParser = require('@middy/http-multipart-body-parser')
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
 
-  const { email, password, name, surname } = event.body
+  const { email, password, name, surname, profile_picture } = event.body
 
   const cognitoService = new CognitoService()
   await cognitoService.createNewUser({
@@ -14,10 +14,9 @@ const handler = async (event, context) => {
     password,
     name,
     surname,
-    file: event.body['profile picture'],
+    file: profile_picture,
   })
 
-  console.log(`${context.functionName} function complete`)
   return {
     statusCode: 201,
     headers: {
