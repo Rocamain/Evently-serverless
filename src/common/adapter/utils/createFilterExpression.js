@@ -16,10 +16,7 @@ module.exports = ({
   const expressionAttributeValues = {
     ':value': value,
   }
-  console.log({
-    includePast,
-    condition: !includePast || includePast !== 'true' || includePast !== true,
-  })
+
   if (includePast === false) {
     expression = '#field = :value AND #field2 > :value2'
     expressionAttributeNames['#field2'] = 'eventDateAndTime'

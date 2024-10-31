@@ -1,8 +1,6 @@
 const multipartBodyParser = require('@middy/http-multipart-body-parser')
-
 const middy = require('@middy/core')
 const httpErrorHandler = require('@middy/http-error-handler')
-
 const EntityService = require('../../common/service/entityService')
 const bodyValidation = require('../../common/middlewares/requestBodyValidator')
 const customErrors = require('../../common/middlewares/customError')

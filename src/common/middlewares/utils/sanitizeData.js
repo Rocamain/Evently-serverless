@@ -10,7 +10,6 @@ const sanitizeData = (data) => {
     }
     // Convert eventPhotos to an array if it receives only one photo.
     if (!Array.isArray(data.eventPictures)) {
-      console.log({ eventPictures: data.eventPictures })
       data.eventPictures = [data.eventPictures]
     }
   }

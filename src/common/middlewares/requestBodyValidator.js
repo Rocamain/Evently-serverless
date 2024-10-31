@@ -17,7 +17,6 @@ const bodyValidation = () => {
     } else {
       schema = getSchema(data.type)
     }
-    console.log({ data })
     // Validate the data against the schema
     validateSchema(data, schema)
   }
