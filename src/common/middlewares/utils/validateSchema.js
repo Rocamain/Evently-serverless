@@ -7,7 +7,7 @@ const {
   ISO_DATE_REGEX,
 } = require('../../../constants/constants')
 
-const ajv = new Ajv()
+const ajv = new Ajv({ allowUnionTypes: true })
 
 ajv.addFormat('HH:MM', TIME_REGEX)
 ajv.addFormat('YYYY-MM-DD', DATE_REGEX)
@@ -25,6 +25,11 @@ ajv.addFormat('boolean', {
 
     return false
   },
+})
+ajv.addKeyword({
+  keyword: 'isBuffer',
+  validate: (schema, data) => Buffer.isBuffer(data),
+  errors: false,
 })
 
 addFormats(ajv)

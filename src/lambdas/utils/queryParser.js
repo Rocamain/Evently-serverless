@@ -23,6 +23,9 @@ module.exports = (params) => {
         case 'includePast':
           query[key] = paramsChecked[key] === 'true'
           break
+        case 'includeBookings':
+          query[key] = paramsChecked[key] === 'true'
+          break
         default:
           query[key] = paramsChecked[key]
       }

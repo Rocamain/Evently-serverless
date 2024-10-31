@@ -137,7 +137,7 @@ functions:
         Action:
           - cognito-idp:AdminGetUser
         Resource: "*"
-
+        Resource: '*'
   savePhoto:
     name: ${self:service}-${self:provider.stage}-save-photo
     handler: src/lambdas/savePhoto/function.handler
@@ -187,11 +187,12 @@ functions:
     iamRoleStatements:
       - Effect: "Allow"
         Action:
-          - "dynamodb:GetItem"
+          - 'DynamoDB:GetItem'
+          - "dynamodb:Query"
         Resource: !GetAtt eventlyTable.Arn
   getItemsByOwner:
-    name: ${self:service}-${self:provider.stage}-get-items-by-owner
-    handler: src/lambdas/getItemsById/function.handler
+    name: ${self:service}-${self:provider.stage}-get-items-by-owner-hola
+    handler: src/lambdas/getItemsByOwnerId/function.handler
     description: Get Items from repository by eventOwner.
     memorySize: 128
     timeout: 10
@@ -206,12 +207,15 @@ functions:
     iamRoleStatements:
       - Effect: "Allow"
         Action:
-          - "DynamoDB:GetItem"
-        Resource: !GetAtt eventlyTable.Arn
+          - 'dynamodb:GetItem'
+          - "dynamodb:Query"
+        Resource:
+        - !GetAtt eventlyTable.Arn
+        - !Sub "arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.tableName}/index/eventOwnerId"
   getItemsByUser:
-    name: ${self:service}-${self:provider.stage}-get-items-by-event-owner
-    handler: src/lambdas/getItemsById/function.handler
-    description: Get Items from repository by eventOwner.
+    name: ${self:service}-${self:provider.stage}-get-items-by-user-id
+    handler: src/lambdas/getItemsByUserId/function.handler
+    description: Get Items from repository by user.
     memorySize: 128
     timeout: 10
     environment:
@@ -225,8 +229,12 @@ functions:
     iamRoleStatements:
       - Effect: "Allow"
         Action:
-          - "DynamoDB:GetItem"
-        Resource: !GetAtt eventlyTable.Arn
+          - "dynamodb:GetItem"
+          - "dynamodb:Query"
+        Resource:
+          - !GetAtt eventlyTable.Arn
+          - !Sub "arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.tableName}/index/userId"
+
   DeleteItem:
     name: ${self:service}-${self:provider.stage}-delete-item
     handler: src/lambdas/deleteItem/function.handler

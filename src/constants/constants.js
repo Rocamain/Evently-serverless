@@ -31,6 +31,7 @@ const QUERY_PARAMS = [
   'searchWords',
   'maxPrice',
   'exclusiveStartKey',
+  'withBookings',
 ]
 
 const EVENT_CATEGORIES = [
@@ -96,8 +97,12 @@ const ENTITY_BOOKING_PROPERTIES = [
 ]
 
 const QUERY_PARAMS_SCHEMA = {
+  type: 'object',
   properties: {
-    includePast: { type: 'string', format: 'boolean' },
+    includePast: {
+      type: 'string',
+      enum: ['true', 'false'],
+    },
     eventCategory: { type: 'string', enum: EVENT_CATEGORIES },
     limit: { type: ['number', 'string'] },
     fromDate: { type: 'string', format: 'YYYY-MM-DD' },
@@ -105,9 +110,13 @@ const QUERY_PARAMS_SCHEMA = {
     searchWords: { type: 'string' },
     maxPrice: { type: 'number' },
     lastPK: { type: 'string' },
-    lastEventDateAndTime: { type: 'string', format: 'ISO8601' },
+    lastEventDateAndTime: { type: 'string', format: 'date-time' },
     lastUserId: { type: 'string' },
     lastEventOwnerId: { type: 'string' },
+    withBookings: {
+      type: 'string',
+      enum: ['true', 'false'],
+    },
   },
   additionalProperties: false,
 }
@@ -134,6 +143,8 @@ const EVENT_SCHEMA = {
     eventTime: { type: 'string', pattern: TIME_REGEX.source },
     eventPrice: { type: 'number', minimum: 0 },
     eventLink: { type: 'string', format: 'uri' },
+    eventGeoHash: { type: 'string' },
+
     eventPictures: {
       type: 'array',
       items: {
@@ -143,12 +154,31 @@ const EVENT_SCHEMA = {
           mimetype: { type: 'string', enum: ['image/webp'] },
           encoding: { type: 'string' },
           truncated: { type: 'boolean' },
+          content: { isBuffer: true },
         },
         required: ['filename', 'mimetype', 'encoding', 'truncated'],
       },
     },
   },
-  required: BODY_EVENT_PROPERTIES,
+  required: [
+    'type',
+    'eventOwnerId',
+    'eventOwnerName',
+    'eventOwnerEmail',
+    'eventOwnerPicture',
+    'eventTitle',
+    'eventDescription',
+    'eventLocationId',
+    'eventLocationLat',
+    'eventLocationLng',
+    'eventLocationAddress',
+    'eventCategory',
+    'eventDate',
+    'eventTime',
+    'eventPrice',
+    'eventLink',
+    'eventPictures',
+  ],
   additionalProperties: false,
 }
 
