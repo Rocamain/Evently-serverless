@@ -1,3 +1,31 @@
+const RADIUS_OF_EARTH = 3959 // in miles
+
+function degreesToRadians(degrees) {
+  return (degrees * Math.PI) / 180
+}
+
+function calculateBoundingBox(latitude, longitude, radiusMiles = 25) {
+  latitude = parseFloat(latitude)
+  longitude = parseFloat(longitude)
+
+  const lat = degreesToRadians(latitude)
+
+  const latRadius = radiusMiles / RADIUS_OF_EARTH
+  const minLat = latitude - (latRadius * 180) / Math.PI
+  const maxLat = latitude + (latRadius * 180) / Math.PI
+
+  const lonRadius = Math.asin(Math.sin(latRadius) / Math.cos(lat))
+  const minLon = longitude - (lonRadius * 180) / Math.PI
+  const maxLon = longitude + (lonRadius * 180) / Math.PI
+
+  return {
+    minLat: parseFloat(minLat.toFixed(6)),
+    maxLat: parseFloat(maxLat.toFixed(6)),
+    minLon: parseFloat(minLon.toFixed(6)),
+    maxLon: parseFloat(maxLon.toFixed(6)),
+  }
+}
+
 module.exports = ({
   includePast = false,
   eventCategory,
@@ -7,9 +35,10 @@ module.exports = ({
   maxPrice,
   value,
   field,
+  radius,
+  latitude,
+  longitude,
 }) => {
-  const FIVE_MINUTES = 300000
-
   let filterExpression = ''
   let expression = '#field = :value'
   const expressionAttributeNames = {
@@ -18,50 +47,47 @@ module.exports = ({
   const expressionAttributeValues = {
     ':value': value,
   }
-  if (!includePast) {
-    expression = '#field = :value AND #field2 >= :value2'
+
+  // Date filtering conditions
+  if (includePast === false) {
+    expression = '#field = :value AND #field2 > :value2'
     expressionAttributeNames['#field2'] = 'eventDateAndTime'
-    expressionAttributeValues[':value2'] = new Date(
-      new Date().getTime() + FIVE_MINUTES,
-    ).toISOString()
+    expressionAttributeValues[':value2'] = new Date().toISOString()
   }
 
   if (fromDate) {
     expression = '#field = :value AND #field2 >= :value2'
     expressionAttributeNames['#field2'] = 'eventDateAndTime'
-    expressionAttributeValues[':value2'] = new Date(
-      new Date(fromDate).getTime() + FIVE_MINUTES,
-    ).toISOString()
+    expressionAttributeValues[':value2'] = new Date(fromDate).toISOString()
 
     if (toDate) {
-      delete expressionAttributeNames['#field2']
       delete expressionAttributeValues[':value2']
-      expression =
-        '#field = :value AND eventDateAndTime BETWEEN :fromDate AND :toDate'
-      expressionAttributeValues[':fromDate'] = fromDate
-      expressionAttributeValues[':toDate'] = toDate
+      expression = '#field = :value AND #field2 BETWEEN :fromDate AND :toDate'
+      expressionAttributeValues[':fromDate'] = new Date(fromDate).toISOString()
+      expressionAttributeValues[':toDate'] = new Date(toDate).toISOString()
     }
   }
 
   if (!fromDate && toDate) {
     expression = '#field = :value AND #field2 BETWEEN :fromDate AND :value2'
-
-    expressionAttributeValues[':fromDate'] = new Date(
-      new Date().getTime() + FIVE_MINUTES,
-    ).toISOString()
-    expressionAttributeValues[':value2'] = toDate
+    expressionAttributeValues[':fromDate'] = new Date().toISOString()
+    expressionAttributeValues[':value2'] = new Date(toDate).toISOString()
     if (includePast) {
       delete expressionAttributeValues[':fromDate']
-      expression = '#field = :value AND eventDateAndTime <= :value2'
+      expressionAttributeValues[':value2'] = toDate
+      expressionAttributeNames['#field2'] = 'eventDateAndTime'
+      expression = '#field = :value AND #field2 <= :value2'
     }
   }
 
+  // Event category filtering
   if (eventCategory) {
     filterExpression += ' #field3 = :value3'
     expressionAttributeNames['#field3'] = 'eventCategory'
     expressionAttributeValues[':value3'] = eventCategory
   }
 
+  // Max price filtering
   if (maxPrice) {
     const maxPriceExpression = '#field4 <= :maxPrice'
     expressionAttributeNames['#field4'] = 'eventPrice'
@@ -74,6 +100,7 @@ module.exports = ({
     }
   }
 
+  // Search words filtering
   if (searchWords && searchWords.length > 0) {
     const searchWordsArray = Array.isArray(searchWords[0])
       ? searchWords
@@ -98,6 +125,32 @@ module.exports = ({
     // Remove leading 'AND' from filterExpression
     filterExpression = filterExpression.replace(/^ AND /, '')
   }
+
+  // Geolocation filtering (50-mile radius)
+  if (latitude && longitude) {
+    const { minLat, maxLat, minLon, maxLon } = calculateBoundingBox(
+      latitude,
+      longitude,
+      radius,
+    )
+
+    // Corrected this line: removed the colon (:) after the attribute name
+    const latLonExpression = `#eventLocationLat BETWEEN :minLat AND :maxLat AND #eventLocationLng BETWEEN :minLon AND :maxLon`
+    console.log({ latitude, longitude, minLat, maxLat, minLon, maxLon })
+    expressionAttributeNames['#eventLocationLat'] = 'eventLocationLat'
+    expressionAttributeNames['#eventLocationLng'] = 'eventLocationLng'
+    expressionAttributeValues[':minLat'] = minLat
+    expressionAttributeValues[':maxLat'] = maxLat
+    expressionAttributeValues[':minLon'] = minLon
+    expressionAttributeValues[':maxLon'] = maxLon
+
+    if (filterExpression === '') {
+      filterExpression = latLonExpression
+    } else {
+      filterExpression += ` AND ${latLonExpression}`
+    }
+  }
+
   return {
     expression,
     expressionAttributeNames,

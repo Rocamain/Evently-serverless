@@ -1,54 +1,50 @@
-const { default: axios } = require('axios')
-const FormData = require('form-data')
-
+process.env.NODE_ENV = 'test'
+const { readFileSync } = require('node:fs')
+const generateDate = require('../../../src/common/service/utils/generateDate')
+const { eventRequest, bookingRequest } = require('../utils/request')
+const eventPayload = require('../utils/eventPayload')
 const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
 
+const event = {}
 describe('createItem function', () => {
-  const event = {}
   test('should respond with statusCode 201 to correct request item Event', async () => {
     // GIVEN
-    const payload = {
-      type: 'event',
-      eventOwnerId: 'create_Item_Owner_Id',
-      eventOwnerName: 'Javier Roca',
-      eventOwnerEmail: 'javier@fakeemail.com',
-      eventTitle: 'Event 3',
-      eventDescription: 'This is a description.',
-      eventCategory: 'Other',
-      eventLocation: 'Online',
-      eventDate: '23-05-2023',
-      eventTime: '12:55',
-      eventPrice: 0,
-      eventLink: 'https://website.com',
-    }
+    const payload = { ...eventPayload }
 
-    const form = new FormData()
+    //WHEN
 
-    form.append('data', JSON.stringify(payload))
+    const response = await eventRequest(payload, API_BASE_URL)
 
-    // WHEN
-    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
+    const { status, data } = response
 
-    const { eventId, createdAt, ...response } = data.data
-    event.eventId = data.data.eventId.split('-')[0]
+    const { createdAt, eventId, userId, ...responseData } = data.data
+    event.eventId = eventId
 
-    payload.eventPhotos = ['placeholder.com/hello.webp']
+    event.eventDateAndTime = responseData.eventDateAndTime
+    event.eventOwnerName = responseData.eventOwnerName
+    event.eventOwnerId = responseData.eventOwnerId
+    event.eventOwnerName = responseData.eventOwnerName
+    event.eventOwnerId = responseData.eventOwnerId
+    event.eventTitle = responseData.eventTitle
+    event.eventCategory = responseData.eventCategory
+    event.eventOwnerId = responseData.eventOwnerId
+    event.eventLocationId = responseData.eventLocationId
+    delete payload.eventPictures
+    payload.eventPictures = ['placeholder_picture-1']
 
-    delete payload.eventDateAndTime
-
-    // TO FIX  Error happened on github action difference of one hour because is UTC
-
-    delete response.eventDateAndTime
-
+    payload.eventDateAndTime = generateDate(
+      payload.eventDate,
+      payload.eventTime,
+    )
     delete payload.eventDate
     delete payload.eventTime
 
     // THEN
     expect(status).toBe(201)
     expect(new Date(createdAt)).toBeInstanceOf(Date)
-    expect(createdAt).toBe(new Date(createdAt).toISOString())
-    expect(response).toEqual(payload)
-    expect(eventId).toContain('-event')
+    expect(responseData).toEqual(payload)
+    expect(typeof eventId).toBe('string')
+    expect(userId).toBe('event')
   })
   test('should respond with statusCode 201 to correct request item Booking', async () => {
     // GIVEN
@@ -57,19 +53,42 @@ describe('createItem function', () => {
       type: 'booking',
       userId: 'create_Item_Owner_Id_userId_1',
       userName: 'John Doe',
-      userEmail: 'userId_1@fakeemail.com',
+      userEmail: 'user_id_1@fakeemail.com',
       eventId: event.eventId,
     }
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
-    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
-
-    const { createdAt } = data.data
+    const { status, data } = await bookingRequest(payload, API_BASE_URL)
+    const {
+      type,
+      userId,
+      userName,
+      userEmail,
+      bookingId,
+      createdAt,
+      eventId,
+      eventDateAndTime,
+      eventTitle,
+      eventOwnerId,
+      eventOwnerName,
+      eventCategory,
+      eventLocationId,
+    } = data.data
 
     // THEN
     expect(status).toBe(201)
+    expect(userId).toBe(payload.userId)
+    expect(userName).toBe(payload.userName)
+    expect(userEmail).toBe(payload.userEmail)
+    expect(type).toBe('booking')
+    expect(typeof bookingId).toBe('string')
+    expect(eventId).toBe(event.eventId)
+    expect(eventDateAndTime).toBe(event.eventDateAndTime)
+    expect(eventOwnerId).toBe(event.eventOwnerId)
+    expect(eventLocationId).toBe(event.eventLocationId)
+    expect(eventOwnerName).toBe(event.eventOwnerName)
+    expect(eventTitle).toBe(event.eventTitle)
+    expect(eventCategory).toBe(event.eventCategory)
     expect(new Date(createdAt)).toBeInstanceOf(Date)
   })
 
@@ -82,19 +101,13 @@ describe('createItem function', () => {
       type: 'booking',
       userId: 'create_Item_Owner_Id_userId_1',
       userName: 'John Doe',
-      userEmail: 'userId_1@fakeemail.com',
+      userEmail: 'user_id_1@fakeemail.com',
       eventId: event.eventId,
     }
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
 
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
-
-    const { status, data } = response
+    const { status, data } = await bookingRequest(payload, API_BASE_URL)
 
     // THEN
 
@@ -119,14 +132,7 @@ describe('createItem function', () => {
     }
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
-
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
-    const { status, data } = response
-
+    const { status, data } = await bookingRequest(payload, API_BASE_URL)
     // THEN
 
     expect(status).toBe(400)
@@ -141,21 +147,15 @@ describe('createItem function', () => {
     // GIVEN
 
     const payload = {
-      // Error here
+      // type property not added Error here
       userId: 'userId_1',
       userName: 'John Doe',
       userEmail: 'userId_1@fakeemail.com',
-      eventId: "I don't exist",
+      eventId: 'event.eventId',
     }
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
-
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
-    const { status, data } = response
+    const { status, data } = await bookingRequest(payload, API_BASE_URL)
 
     // THEN
 
@@ -171,21 +171,15 @@ describe('createItem function', () => {
     // GIVEN
 
     const payload = {
-      type: '', // Error here
+      type: 'not accepted type', // Error here
       userId: 'userId_1',
       userName: 'John Doe',
       userEmail: 'userId_1@fakeemail.com',
-      eventId: "I don't exist",
+      eventId: 'event.eventId',
     }
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
-
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
-    const { status, data } = response
+    const { status, data } = await bookingRequest(payload, API_BASE_URL)
 
     // THEN
 
@@ -198,37 +192,32 @@ describe('createItem function', () => {
       },
     })
   })
-  test('should respond with statusCode 400 to incorrect request item Booking, userId not valid', async () => {
+  test('should respond with statusCode 400 to incorrect request item Booking, missing userId', async () => {
     // GIVEN
 
     const payload = {
       type: 'booking',
-      userId: true, // Error here
+      // Missing propery userId Error here
       userName: 'John Doe',
       userEmail: 'userId_1@fakeemail.com',
-      eventId: "I don't exist",
+      eventId: event.eventId,
     }
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
 
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
-    const { status, data } = response
+    const { status, data } = await bookingRequest(payload, API_BASE_URL)
 
     // THEN
 
     expect(status).toBe(400)
     expect(data).toEqual({
       error: {
-        message: 'userId, must be string.',
+        message: "must have required property 'userId'.",
         name: 'ValidationException',
       },
     })
   })
-  test('should respond with statusCode 400 to incorrect request item Booking, eventId not valid', async () => {
+  test('should respond with statusCode 400 to incorrect request item Booking, eventId missing', async () => {
     // GIVEN
 
     const payload = {
@@ -236,248 +225,149 @@ describe('createItem function', () => {
       userId: 'user_id 1',
       userName: 'John Doe',
       userEmail: 'userId_1@fakeemail.com',
-      eventId: 111, // Error here
+      // eventId property not added Error here
     }
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
 
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
-    const { status, data } = response
+    const { status, data } = await bookingRequest(payload, API_BASE_URL)
 
     // THEN
 
     expect(status).toBe(400)
     expect(data).toEqual({
       error: {
-        message: 'eventId, must be string.',
+        message: "must have required property 'eventId'.",
         name: 'ValidationException',
       },
     })
   })
-
-  // ERRORS ON EVENT.
-
-  test('should respond with statusCode 400 to incorrect request, Missing Type', async () => {
+  test('should respond with statusCode 400 to incorrect request, empty payload', async () => {
     // GIVEN
     const payload = {}
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
-
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
-    const { status, data } = response
+    const { status, data } = await bookingRequest(payload, API_BASE_URL)
 
     expect(status).toBe(400)
     expect(data).toEqual({
       error: {
-        message: "must have required property 'type'.",
-        name: 'ValidationException',
+        name: 'UnsupportedMediaTypeError',
+        message: 'Invalid or malformed multipart/form-data was provided',
       },
     })
   })
+
   test('should respond with statusCode 400 to incorrect request, Type not valid', async () => {
     // GIVEN
-    const payload = {
-      type: 'evnt', // Error here
-      eventOwnerId: '2',
-      eventOwnerName: 'Javier Roca',
-      eventOwnerEmail: 'javier@fakeemail.com',
-      eventTitle: 'Event 3',
-      eventDescription: 'This is a description.',
-      eventLocation: 'Online',
-      eventDate: '23-05-2023',
-      eventTime: '12:55',
-      eventPrice: 1,
-      eventLink: 'https://website.com',
+    const payload = { ...eventPayload }
+    // Error on uploading a non webp extiention picture
+    payload.eventPictures = {
+      buffer: Buffer.from(
+        readFileSync(
+          '__tests__/lambdas/utils/image/event_jpg_image.jpg',
+          (err, data) => {
+            if (err) throw err
+            return data
+          },
+        ),
+      ),
+      fileName: 'event_jpg_image.jpg',
     }
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
+    const response = await eventRequest(payload, API_BASE_URL)
 
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
     const { status, data } = response
 
+    //THEN
     expect(status).toBe(400)
     expect(data).toEqual({
       error: {
         message:
-          'type must be equal to one of the allowed values: event, booking.',
+          'eventPictures/0/mimetype must be equal to one of the allowed values: image/webp.',
         name: 'ValidationException',
       },
     })
   })
   test('should respond with statusCode 400 to incorrect request, eventOwnerId not valid', async () => {
     // GIVEN
-    const payload = {
-      type: 'event',
-      eventOwnerId: 2, // Error here
-      eventOwnerName: 'Javier Roca',
-      eventOwnerEmail: 'javier@fakeemail.com',
-      eventTitle: 'Event 3',
-      eventDescription: 'This is a description.',
-      eventCategory: 'Other',
-      eventLocation: 'Online',
-      eventDate: '23-05-2023',
-      eventTime: '12:55',
-      eventPrice: 1,
-      eventLink: 'https://website.com',
-    }
-
+    const payload = { ...eventPayload }
+    delete payload.eventOwnerId
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
+    const response = await eventRequest(payload, API_BASE_URL)
 
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-
-      .catch((err) => err)
     const { status, data } = response
 
+    //THEN
     expect(status).toBe(400)
     expect(data).toEqual({
       error: {
-        message: 'eventOwnerId, must be string.',
+        message: "must have required property 'eventOwnerId'.",
         name: 'ValidationException',
       },
     })
   })
   test('should respond with statusCode 400 to incorrect request, eventOwnerEmail not valid', async () => {
     // GIVEN
-    const payload = {
-      type: 'event',
-      eventOwnerId: '2',
-      eventOwnerName: 'Javier Roca',
-      eventOwnerEmail: 'javierfakeemail.com', // Error here
-      eventTitle: 'Event 3',
-      eventDescription: 'This is a description.',
-      eventCategory: 'Other',
-      eventLocation: 'Online',
-      eventDate: '23-05-2023',
-      eventTime: '12:55',
-      eventPrice: 1,
-      eventLink: 'https://website.com',
-    }
-
+    const payload = { ...eventPayload }
+    payload.eventOwnerEmail = 'javierfakeemail.com'
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
+    const { status, data } = await eventRequest(payload, API_BASE_URL)
 
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
-    const { status, data } = response
-
+    // THEN
     expect(status).toBe(400)
     expect(data).toEqual({
       error: {
-        message: 'must match format email.',
+        message: 'eventOwnerEmail, must match format email.',
         name: 'ValidationException',
       },
     })
   })
   test('should respond with statusCode 400 to incorrect request, eventDate not valid', async () => {
     // GIVEN
-    const payload = {
-      type: 'event',
-      eventOwnerId: '2',
-      eventOwnerName: 'Javier Roca',
-      eventOwnerEmail: 'javier@fakeemail.com',
-      eventTitle: 'Event 3',
-      eventDescription: 'This is a description.',
-      eventCategory: 'Other',
-      eventLocation: 'Online',
-      eventDate: '41-05-2023', // Error here
-      eventTime: '12:55',
-      eventPrice: 1,
-      eventLink: 'https://website.com',
-    }
+    const payload = { ...eventPayload }
+    payload.eventDate = '2030/23/15'
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
+    const { status, data } = await eventRequest(payload, API_BASE_URL)
 
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
-    const { status, data } = response
+    // THEN
 
     expect(status).toBe(400)
     expect(data).toEqual({
       error: {
-        message: 'must match format DD-MM-YYYY.',
+        message: 'eventDate must match format YYYY/MM/DD.',
         name: 'ValidationException',
       },
     })
   })
   test('should respond with statusCode 400 to incorrect request, eventTime not valid', async () => {
     // GIVEN
-    const payload = {
-      type: 'event',
-      eventOwnerId: '2',
-      eventOwnerName: 'Javier Roca',
-      eventOwnerEmail: 'javier@fakeemail.com',
-      eventTitle: 'Event 3',
-      eventDescription: 'This is a description.',
-      eventCategory: 'Other',
-      eventLocation: 'Online',
-      eventDate: '21-05-2023',
-      eventTime: '25:55', // Error here
-      eventPrice: 1,
-      eventLink: 'https://website.com',
-    }
-
+    const payload = { ...eventPayload }
+    payload.eventTime = '25:45'
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
+    const response = await eventRequest(payload, API_BASE_URL)
 
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
     const { status, data } = response
 
     expect(status).toBe(400)
     expect(data).toEqual({
       error: {
-        message: 'must match format HH:MM.',
+        message: 'eventTime must match format HH:MM.',
         name: 'ValidationException',
       },
     })
   })
   test('should respond with statusCode 400 to incorrect request, eventPrice not valid', async () => {
     // GIVEN
-    const payload = {
-      type: 'event',
-      eventOwnerId: '2',
-      eventOwnerName: 'Javier Roca',
-      eventOwnerEmail: 'javier@fakeemail.com',
-      eventTitle: 'Event 3',
-      eventDescription: 'This is a description.',
-      eventLocation: 'Online',
-      eventCategory: 'Other',
-      eventDate: '21-05-2023',
-      eventTime: '22:55',
-      eventPrice: false, // Error here
-      eventLink: 'https://website.com',
-    }
-
+    const payload = { ...eventPayload }
+    payload.eventPrice = true
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
+    const response = await eventRequest(payload, API_BASE_URL)
 
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
     const { status, data } = response
+    console.log(data)
 
     expect(status).toBe(400)
     expect(data).toEqual({
@@ -489,35 +379,18 @@ describe('createItem function', () => {
   })
   test('should respond with statusCode 400 to incorrect request, eventLink not valid', async () => {
     // GIVEN
-    const payload = {
-      type: 'event',
-      eventOwnerId: '2',
-      eventOwnerName: 'Javier Roca',
-      eventOwnerEmail: 'javier@fakeemail.com',
-      eventTitle: 'Event 3',
-      eventDescription: 'This is a description.',
-      eventCategory: 'Other',
-      eventLocation: 'Online',
-      eventDate: '21-05-2023',
-      eventTime: '22:55',
-      eventPrice: 'Not a number',
-      eventLink: 'website.com',
-    }
+    const payload = { ...eventPayload }
+    payload.eventLink = 'website.com'
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
-
-    const { response } = await axios
-      .post(`${API_BASE_URL}/item`, form)
-      .catch((err) => err)
+    const response = await eventRequest(payload, API_BASE_URL)
 
     const { status, data } = response
 
     expect(status).toBe(400)
     expect(data).toEqual({
       error: {
-        message: 'eventPrice, must be number.',
+        message: 'eventLink, must match format uri.',
         name: 'ValidationException',
       },
     })

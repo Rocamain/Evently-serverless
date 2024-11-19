@@ -13,68 +13,85 @@ module.exports = class EntityService {
     this.field = field
   }
 
-  async createEvent(event, files) {
-    event.id = generateId()
-    // const { IS_OFFLINE } = process.env
-
-    if (files.length) {
-      event.eventPhotos = await this.s3Service.saveEventPictures({
-        files,
-        eventId: event.id,
-      })
-    } else {
-      event.eventPhotos = ['placeholder.com/hello.webp']
+  async createEvent(data, files) {
+    data.id = generateId()
+    console.log({
+      'Running Event Service wit data...': files,
+      data,
+    })
+    if (!files) {
+      return { message: 'To create an event, pictures are required' }
     }
 
-    const response = await this.create(event)
+    if (process.env.NODE_ENV === 'test') {
+      data.eventPictures = files.map(
+        (file, index) => 'placeholder_picture' + '-' + Number(index + 1),
+      )
+    } else {
+      data.eventPictures = await this.s3Service.saveEventPictures({
+        files,
+        eventId: data.id,
+      })
+    }
+    const response = await this.create(data)
 
     return response
   }
 
   async createBooking(booking) {
+    console.log({ 'Running Booking Service with data...': booking })
     const { eventId, ...restRequestBody } = booking
-    const eventInfo = await this.get(eventId, 'event')
-
-    if (eventInfo && Object.keys(eventInfo.data).length) {
-      const {
-        eventLocation,
-        eventDateAndTime,
-        eventOwnerId,
-        eventOwnerName,
-        eventTitle,
-        eventCategory,
-      } = eventInfo.data
-
-      booking = {
-        eventDateAndTime,
-        eventOwnerId,
-        eventOwnerName,
-        eventLocation,
-        eventTitle,
-        eventCategory,
-        eventId,
-        ...restRequestBody,
-      }
-
-      return await this.create(booking)
-    } else {
+    if (!eventId) {
       const error = new Error()
       error.message = 'Event does not exist'
       error.name = 'ValidationException'
       throw error
     }
+    const id = eventId.split('-event')[0]
+
+    const eventInfo = await this.get(id, 'event')
+
+    const existEvent = Object.keys(eventInfo.data).length !== 0
+
+    if (!existEvent) {
+      const error = new Error()
+      error.message = 'Event does not exist'
+      error.name = 'ValidationException'
+      throw error
+    }
+
+    const {
+      eventDateAndTime,
+      eventOwnerId,
+      eventOwnerName,
+      eventTitle,
+      eventCategory,
+    } = eventInfo.data
+
+    booking = {
+      eventDateAndTime,
+      eventOwnerId,
+      eventOwnerName,
+      eventLocation,
+      eventTitle,
+      eventCategory,
+      eventId,
+      ...restRequestBody,
+    }
+
+    return await this.create(booking)
   }
 
-  async create(requestBody) {
+  async create(data) {
     console.log(
-      `Creating entity item in repository on table ${process.env.tableName}`,
+      `Creating entity item in repository on table ${
+        process.env.tableName
+      } with this data: ${JSON.stringify(data)}`,
     )
 
-    const entityItem = new Entity(requestBody).toItem()
+    const entityItem = new Entity(data).toItem()
 
     await this.dynamoDbAdapter.createItem(this.tableName, entityItem)
-
-    console.log('item created')
 
     return { data: Entity.fromItem(entityItem) }
   }
@@ -135,7 +152,7 @@ module.exports = class EntityService {
     }
   }
 
-  async queryByGlobalIndex(id, params) {
+  async queryByGlobalIndex(id, queries) {
     console.log(
       `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,
     )
@@ -146,10 +163,10 @@ module.exports = class EntityService {
         indexName: this.indexName,
         field: this.field,
         value: id,
-        ...params,
+        ...queries,
       },
     )
-    console.log('service global index', { response })
+
     const items = response.Items
     const lastEvaluatedKey = response.LastEvaluatedKey
 
@@ -157,15 +174,80 @@ module.exports = class EntityService {
       console.log('Items found')
 
       const itemsEntities = items.map((item) => Entity.fromItem(item))
-
-      return JSON.stringify({
+      return {
         data: itemsEntities,
         lastEvaluatedKey,
-      })
+      }
     } else {
       console.log('Items not found')
 
-      return JSON.stringify({ data: [] })
+      return { data: [] }
+    }
+  }
+
+  async queryByGlobalIndexUserId(id, queries) {
+    console.log(
+      `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,
+    )
+
+    const response = await this.dynamoDbAdapter.queryIndexByField(
+      this.tableName,
+      {
+        indexName: this.indexName,
+        field: this.field,
+        value: id,
+        ...queries,
+      },
+    )
+
+    const items = response.Items
+    const lastEvaluatedKey = response.LastEvaluatedKey
+
+    if (items.length) {
+      console.log('Items found')
+
+      const itemsEntities = items.map((item) => Entity.fromItem(item))
+      return {
+        data: itemsEntities,
+        lastEvaluatedKey,
+      }
+    } else {
+      console.log('Items not found')
+
+      return { data: [] }
+    }
+  }
+
+  async queryByGlobalIndexOnwerId(id, queries) {
+    console.log(
+      `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,
+    )
+
+    const response = await this.dynamoDbAdapter.queryIndexByField(
+      this.tableName,
+      {
+        indexName: this.indexName,
+        field: this.field,
+        value: id,
+        ...queries,
+      },
+    )
+
+    const items = response.Items
+    const lastEvaluatedKey = response.LastEvaluatedKey
+
+    if (items.length) {
+      console.log('Items found')
+
+      const itemsEntities = items.map((item) => Entity.fromItem(item))
+      return {
+        data: itemsEntities,
+        lastEvaluatedKey,
+      }
+    } else {
+      console.log('Items not found')
+
+      return { data: [] }
     }
   }
 

@@ -17,7 +17,6 @@ const userAttributes = (attributes) => {
 
 const handler = async (event, context) => {
   console.log(`Starting Lambda function ${context.functionName}`)
-
   const { USER_POOL_ID, REGION, CLIENT_ID } = process.env
   const { email, password } = event.body
 

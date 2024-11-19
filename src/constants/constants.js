@@ -3,14 +3,16 @@ const BODY_EVENT_PROPERTIES = [
   'eventOwnerId',
   'eventOwnerName',
   'eventOwnerEmail',
+  'eventOwnerPicture',
   'eventTitle',
   'eventDescription',
   'eventCategory',
-  'eventLocation',
+  'eventLocationId',
   'eventDate',
   'eventPrice',
   'eventLink',
 ]
+
 const BODY_BOOKING_PROPERTIES = [
   'type',
   'userId',
@@ -29,6 +31,10 @@ const QUERY_PARAMS = [
   'searchWords',
   'maxPrice',
   'exclusiveStartKey',
+  'withBookings',
+  'latitude',
+  'longitude',
+  'radius',
 ]
 
 const EVENT_CATEGORIES = [
@@ -41,18 +47,215 @@ const EVENT_CATEGORIES = [
   'Religious',
   'Other',
   'Travel',
+  'Online',
 ]
 
-module.exports = {
-  TIME_REGEX: /^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]/,
-  DATE_REGEX:
-    /^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})/,
+const KEYS_TO_REMOVE = [
+  '$ACTION_REF_4',
+  '$ACTION_REF_3',
+  '$ACTION_REF_2',
+  '$ACTION_4:0',
+  '$ACTION_4:1',
+  '$ACTION_3:0',
+  '$ACTION_3:1',
+  '$ACTION_2:0',
+  '$ACTION_2:1',
+  '$ACTION_KEY',
+]
 
-  ISO_DATE_REGEX: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+const TIME_REGEX = /^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]/
+const DATE_REGEX = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 
-  ENTITY_EVENT_PROPERTIES: [
-    'id',
-    'createdAt',
+const ENTITY_EVENT_PROPERTIES = [
+  'id',
+  'createdAt',
+  'type',
+  'eventOwnerId',
+  'eventOwnerName',
+  'eventOwnerEmail',
+  'eventOwnerPicture',
+  'eventTitle',
+  'eventDescription',
+  'eventCategory',
+  'eventLocationId',
+  'eventLocationAddress',
+  'eventLocationLat',
+  'eventLocationLng',
+  'eventDateAndTime',
+  'eventPrice',
+  'eventLink',
+  'eventPictures',
+  'userId',
+]
+
+const ENTITY_EVENT_ONLINE_PROPERTIES = [
+  'id',
+  'createdAt',
+  'type',
+  'eventOwnerId',
+  'eventOwnerName',
+  'eventOwnerEmail',
+  'eventOwnerPicture',
+  'eventTitle',
+  'eventDescription',
+  'eventCategory',
+  'eventDateAndTime',
+  'eventPrice',
+  'eventLink',
+  'eventPictures',
+  'userId',
+]
+
+const ENTITY_BOOKING_PROPERTIES = [
+  'id',
+  'createdAt',
+  'type',
+  'userId',
+  'userName',
+  'userEmail',
+  'userPicture',
+  'eventId',
+  'eventDateAndTime',
+  'eventOwnerName',
+  'eventOwnerId',
+  'eventTitle',
+  'eventLocationId',
+  'eventCategory',
+]
+
+const QUERY_PARAMS_SCHEMA = {
+  type: 'object',
+  properties: {
+    includePast: {
+      type: 'string',
+      enum: ['true', 'false'],
+    },
+    eventCategory: { type: 'string', enum: EVENT_CATEGORIES },
+    limit: { type: ['number', 'string'] },
+    fromDate: { type: 'string', format: 'YYYY-MM-DD' },
+    toDate: { type: 'string', format: 'YYYY-MM-DD' },
+    searchWords: { type: 'string' },
+    maxPrice: { type: 'number' },
+    lastPK: { type: 'string' },
+    lastEventDateAndTime: { type: 'string', format: 'date-time' },
+    lastUserId: { type: 'string' },
+    lastEventOwnerId: { type: 'string' },
+    withBookings: {
+      type: 'string',
+      enum: ['true', 'false'],
+    },
+    radius: {
+      type: 'string',
+      pattern: '^(?:[0-9]+(?:\\.[0-9]*)?|\\.\\d+)$', // restricts to positive decimal values
+    },
+    latitude: {
+      type: 'string',
+      pattern: '^(?:-?([1-8]?[0-9](?:\\.\\d+)?|90(?:\\.0+)?))$', // -90 to 90
+    },
+    longitude: {
+      type: 'string',
+      pattern: '^(?:-?(1[0-7][0-9]|[1-9]?[0-9])(?:\\.\\d+)?|-180(?:\\.0+)?)$', // -180 to 180
+    },
+  },
+  additionalProperties: false,
+}
+
+const EVENT_SCHEMA = {
+  type: 'object',
+  properties: {
+    type: { type: 'string', enum: ['event', 'booking'] },
+    eventOwnerId: { type: 'string' },
+    eventOwnerName: { type: 'string' },
+    eventOwnerEmail: { type: 'string', format: 'email' },
+    eventOwnerPicture: { type: 'string', format: 'uri' },
+    eventTitle: { type: 'string' },
+    eventDescription: { type: 'string' },
+    eventLocationId: { type: 'string' },
+    eventLocationLat: { type: 'number', minimum: -90, maximum: 90 },
+    eventLocationLng: { type: 'number', minimum: -180, maximum: 180 },
+    eventLocationAddress: { type: 'string' },
+    eventCategory: {
+      type: 'string',
+      enum: EVENT_CATEGORIES,
+    },
+    eventDate: { type: 'string', pattern: DATE_REGEX.source },
+    eventTime: { type: 'string', pattern: TIME_REGEX.source },
+    eventPrice: { type: 'number', minimum: 0 },
+    eventLink: { type: 'string', format: 'uri' },
+    eventGeoHash: { type: 'string' },
+
+    eventPictures: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          filename: { type: 'string' },
+          mimetype: { type: 'string', enum: ['image/webp'] },
+          encoding: { type: 'string' },
+          truncated: { type: 'boolean' },
+          content: { isBuffer: true },
+        },
+        required: ['filename', 'mimetype', 'encoding', 'truncated'],
+      },
+    },
+  },
+  required: [
+    'type',
+    'eventOwnerId',
+    'eventOwnerName',
+    'eventOwnerEmail',
+    'eventOwnerPicture',
+    'eventTitle',
+    'eventDescription',
+    'eventLocationId',
+    'eventLocationLat',
+    'eventLocationLng',
+    'eventLocationAddress',
+    'eventCategory',
+    'eventDate',
+    'eventTime',
+    'eventPrice',
+    'eventLink',
+    'eventPictures',
+  ],
+  additionalProperties: false,
+}
+
+const EVENT_ONLINE_SCHEMA = {
+  type: 'object',
+  properties: {
+    type: { type: 'string', enum: ['event', 'booking', 'event-online'] },
+    eventOwnerId: { type: 'string' },
+    eventOwnerName: { type: 'string' },
+    eventOwnerEmail: { type: 'string', format: 'email' },
+    eventOwnerPicture: { type: 'string', format: 'uri' },
+    eventTitle: { type: 'string' },
+    eventDescription: { type: 'string' },
+    eventCategory: {
+      type: 'string',
+      enum: EVENT_CATEGORIES,
+    },
+    eventDate: { type: 'string', pattern: DATE_REGEX.source },
+    eventTime: { type: 'string', pattern: TIME_REGEX.source },
+    eventPrice: { type: 'number', minimum: 0 },
+    eventLink: { type: 'string', format: 'uri' },
+    eventPictures: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          filename: { type: 'string' },
+          mimetype: { type: 'string', enum: ['image/webp'] },
+          encoding: { type: 'string' },
+          truncated: { type: 'boolean' },
+          content: { isBuffer: true },
+        },
+        required: ['filename', 'mimetype', 'encoding', 'truncated'],
+      },
+    },
+  },
+  required: [
     'type',
     'eventOwnerId',
     'eventOwnerName',
@@ -61,106 +264,72 @@ module.exports = {
     'eventTitle',
     'eventDescription',
     'eventCategory',
-    'eventLocation',
-    'eventDateAndTime',
+    'eventDate',
+    'eventTime',
     'eventPrice',
     'eventLink',
-    'eventPhotos',
-    'userId',
+    'eventPictures',
   ],
-  ENTITY_BOOKING_PROPERTIES: [
-    'id',
-    'createdAt',
-    'type',
-    'userId',
-    'userName',
-    'userEmail',
-    'userPicture',
-    'eventId',
-    'eventDateAndTime',
-    'eventOwnerName',
-    'eventOwnerId',
-    'eventTitle',
-    'eventLocation',
-    'eventCategory',
-  ],
-  QUERY_PARAMS_SCHEMA: {
-    properties: {
-      includePast: { type: 'string', format: 'boolean' },
-      eventCategory: { type: 'string', enum: EVENT_CATEGORIES },
-      limit: { type: 'number' || 'string' },
-      fromDate: { type: 'string', format: 'DD-MM-YYYY' },
-      toDate: { type: 'string', format: 'DD-MM-YYYY' },
-      searchWords: { type: 'string' },
-      maxPrice: { type: 'number' },
-      lastPK: { type: 'string' },
-      lastEventDateAndTime: { type: 'string', format: 'ISO8601' },
-      lastUserId: { type: 'string' },
-      lastEventOwnerId: { type: 'string' },
-    },
+  additionalProperties: false,
+}
 
-    additionalProperties: false,
-  },
-  EVENT_SCHEMA: {
-    type: 'object',
-    properties: {
-      type: { type: 'string', enum: ['event', 'booking'] },
-      eventOwnerId: { type: 'string' },
-      eventOwnerName: { type: 'string' },
-      eventOwnerEmail: { type: 'string', format: 'email' },
-      eventOwnerPicture: { type: 'string' },
-      eventTitle: { type: 'string' },
-      eventDescription: { type: 'string' },
-      eventLocation: { type: 'string' },
-      eventCategory: {
-        type: 'string',
-        enum: EVENT_CATEGORIES,
-      },
-      eventDate: { type: 'string', format: 'DD-MM-YYYY' },
-      eventTime: { type: 'string', format: 'HH:MM' },
-      eventPrice: { type: 'number', minimum: 0 },
-      eventLink: { type: 'string', format: 'uri' },
-      eventPhotos: { type: 'array', items: { type: 'string' } },
+const EDIT_EVENT_SCHEMA = {
+  type: 'object',
+  properties: {
+    eventTitle: { type: 'string' },
+    eventDescription: { type: 'string' },
+    eventLocationId: { type: 'string' },
+    eventLocationLat: { type: 'string' },
+    eventLocationLng: { type: 'string' },
+    eventLocationAddress: { type: 'string' },
+    eventCategory: {
+      type: 'string',
+      enum: EVENT_CATEGORIES,
     },
-    required: BODY_EVENT_PROPERTIES,
-    additionalProperties: false,
+    eventDate: { type: 'string', format: 'YYYY-MM-DD' },
+    eventTime: { type: 'string', format: 'HH:MM' },
+    eventPrice: { type: 'number', minimum: 0 },
+    eventLink: { type: 'string', format: 'uri' },
   },
-  EDIT_EVENT_SCHEMA: {
-    type: 'object',
-    properties: {
-      eventTitle: { type: 'string' },
-      eventDescription: { type: 'string' },
-      eventLocation: { type: 'string' },
-      eventCategory: {
-        type: 'string',
-        enum: EVENT_CATEGORIES,
-      },
-      eventDate: { type: 'string', format: 'DD-MM-YYYY' },
-      eventTime: { type: 'string', format: 'HH:MM' },
-      eventPrice: { type: 'number', minimum: 0 },
-      eventLink: { type: 'string', format: 'uri' },
-    },
-    additionalProperties: false,
-  },
-  BOOKING_SCHEMA: {
-    type: 'object',
-    properties: {
-      type: { type: 'string', enum: ['event', 'booking'] },
-      userId: { type: 'string' },
-      userName: { type: 'string' },
-      userEmail: { type: 'string', format: 'email' },
-      eventId: { type: 'string' },
-    },
-    required: BODY_BOOKING_PROPERTIES,
-    additionalProperties: false,
-  },
+  additionalProperties: false,
+}
 
-  TYPE_ERROR_SCHEMA: {
-    type: 'object',
-    properties: {
-      type: { type: 'string', enum: ['event', 'booking'] },
-    },
-    required: ['type'],
+const BOOKING_SCHEMA = {
+  type: 'object',
+  properties: {
+    type: { type: 'string', enum: ['event', 'booking'] },
+    userId: { type: 'string' },
+    userName: { type: 'string' },
+    userEmail: { type: 'string', format: 'email' },
+    eventId: { type: 'string' },
   },
-  ACCEPTED_QUERIES: QUERY_PARAMS,
+  required: BODY_BOOKING_PROPERTIES,
+  additionalProperties: false,
+}
+
+const TYPE_ERROR_SCHEMA = {
+  type: 'object',
+  properties: {
+    type: { type: 'string', enum: ['event', 'booking'] },
+  },
+  required: ['type'],
+}
+
+const ACCEPTED_QUERIES = QUERY_PARAMS
+
+module.exports = {
+  TIME_REGEX,
+  DATE_REGEX,
+  ISO_DATE_REGEX,
+  ENTITY_EVENT_PROPERTIES,
+  ENTITY_EVENT_ONLINE_PROPERTIES,
+  ENTITY_BOOKING_PROPERTIES,
+  KEYS_TO_REMOVE,
+  QUERY_PARAMS_SCHEMA,
+  EVENT_SCHEMA,
+  EVENT_ONLINE_SCHEMA,
+  EDIT_EVENT_SCHEMA,
+  BOOKING_SCHEMA,
+  TYPE_ERROR_SCHEMA,
+  ACCEPTED_QUERIES,
 }

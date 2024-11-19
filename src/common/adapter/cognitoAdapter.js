@@ -3,6 +3,8 @@ const {
   AdminCreateUserCommand,
   AdminSetUserPasswordCommand,
   AdminUpdateUserAttributesCommand,
+  AdminInitiateAuthCommand,
+  GetUserCommand,
 } = require('@aws-sdk/client-cognito-identity-provider')
 
 const { USER_POOL_ID, REGION } = process.env
@@ -58,5 +60,26 @@ module.exports = class CognitoAdapter {
       ],
     })
     await this.client.send(updateCommand)
+  }
+
+  async loginUser({ email, password }) {
+    const loginCommand = new AdminInitiateAuthCommand({
+      UserPoolId: USER_POOL_ID,
+      ClientId: CLIENT_ID,
+      AuthFlow: 'ADMIN_NO_SRP_AUTH',
+      AuthParameters: {
+        USERNAME: email,
+        PASSWORD: password,
+      },
+    })
+    await this.client.send(loginCommand)
+  }
+  async getUser({ accessToken }) {
+    const getUserCommand = new GetUserCommand({
+      AccessToken: accessToken,
+    })
+    const res = await this.client.send(getUserCommand)
+    console.log('here, res', res)
+    return res
   }
 }

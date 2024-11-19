@@ -7,4 +7,5 @@ jspm_packages
 .dynamodb
 
 .env
+.esbuild
 .awsenv

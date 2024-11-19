@@ -1,9 +1,16 @@
+process.env.NODE_ENV = 'test'
 const { setup } = require('jest-dev-server')
 
 module.exports = async function globalSetup() {
   globalThis.servers = await setup({
-    command: `kill-port 4000 && kill-port 8000 && npm run offline`,
+    command: `npx kill-port 8000 && npx kill-port 4000 npm run offline --port=3000`,
     launchTimeout: 50000,
-    port: 4000,
+    usedPortAction: 'kill',
+    port: 3000,
+    waitOnScheme: {
+      delay: 1000,
+    },
+
+    debug: true,
   })
 }

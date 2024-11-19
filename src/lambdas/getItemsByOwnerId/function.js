@@ -7,8 +7,8 @@ const queryParser = require('../utils/queryParser')
 const paramsValidator = require('../../common/middlewares/paramsValidator')
 
 const handler = async (event, context) => {
-  console.log(`Starting Lambda function ${context.functionName}`)
-  const id = event.pathParameters.id.split('-')[0]
+  console.log(`Starting Lambda function ${context.functionName} HOLA AMIGO`)
+  const id = event.pathParameters.id
 
   const myEntityService = new EntityService()
 
@@ -17,6 +17,11 @@ const handler = async (event, context) => {
   })
 
   const response = await myEntityService.queryByGlobalIndex(id, queries)
+  console.log({
+    response,
+    queries: queries,
+    withBookings: queries.withBookings,
+  })
 
   return {
     statusCode: 200,
@@ -32,6 +37,6 @@ const handler = async (event, context) => {
 module.exports.handler = middy()
   .use(paramsValidator())
   .use(httpJsonBodyParser())
-  .use(customErrors())
   .use(httpErrorHandler())
   .handler(handler)
+  .use(customErrors())

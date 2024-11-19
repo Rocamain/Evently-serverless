@@ -19,8 +19,10 @@ module.exports = (params) => {
         case 'maxPrice':
           query[key] = Number(paramsChecked[key])
           break
-
-        case 'includePast':
+        case 'radius':
+          query[key] = Number(paramsChecked[key])
+          break
+        case 'includeBookings':
           query[key] = paramsChecked[key] === 'true'
           break
         default:

@@ -1,56 +1,55 @@
 const { default: axios } = require('axios')
-const FormData = require('form-data')
+const { eventRequest, bookingRequest } = require('../utils/request')
+const eventPayload = require('../utils/eventPayload')
+const generateDate = require('../../../src/common/service/utils/generateDate')
 
 // axios.defaults.baseURL = ``
 const API_BASE_URL = `http://localhost:${process.env.PORT || 3000}`
-
+let event = {}
+let booking = {}
 describe('getItem function', () => {
-  const event = {}
-  const booking = {}
-
   // FIRST WE CREATE SOME ITEMS TO LATER DO A GET REQUEST
 
   test('should respond with statusCode 201 to correct request item Event', async () => {
     // GIVEN
-    const payload = {
-      type: 'event',
-      eventOwnerId: 'get_Item_Owner_id_1',
-      eventOwnerName: 'Owner_Name_getItem',
-      eventOwnerEmail: 'javier@fakeemail.com',
-      eventTitle: 'Event 3',
-      eventDescription: 'This is a description.',
-      eventCategory: 'Other',
-      eventLocation: 'Online',
-      eventDate: '23-05-2023',
-      eventTime: '12:55',
-      eventPrice: 1,
-      eventLink: 'https://website.com',
-    }
+    const payload = { ...eventPayload }
 
-    // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payload))
-    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
+    //WHEN
 
-    const response = data.data
-    event.data = response
+    const response = await eventRequest(payload, API_BASE_URL)
+    const { status, data } = response
+    const { createdAt, eventId, userId, ...responseData } = data.data
+
+    event = data.data
+    delete payload.eventPictures
+    payload.eventPictures = ['placeholder_picture-1']
+
+    payload.eventDateAndTime = generateDate(
+      payload.eventDate,
+      payload.eventTime,
+    )
+    delete payload.eventDate
+    delete payload.eventTime
 
     // THEN
     expect(status).toBe(201)
+    expect(new Date(createdAt)).toBeInstanceOf(Date)
+    expect(responseData).toEqual(payload)
+    expect(typeof eventId).toBe('string')
+    expect(userId).toBe('event')
   })
   test('should respond with statusCode 200 to correct request item Event by Id ', async () => {
     // GIVEN
 
     const { status, data } = await axios.get(
-      `${API_BASE_URL}/item/${event.data.eventId}`,
+      `${API_BASE_URL}/item/${event.eventId}-event`,
     )
     // WHEN
-
-    const response = data.data
+    const eventData = data.data
 
     // THEN
     expect(status).toBe(200)
-    expect(response).toEqual(event.data)
+    expect(eventData).toEqual(event)
   })
   test('should respond with statusCode 200 to correct request item by Id that does not exist', async () => {
     // GIVEN
@@ -73,32 +72,33 @@ describe('getItem function', () => {
       userId: 'userId_1',
       userName: '2',
       userEmail: 'userId_1@fakeemail.com',
-      eventId: event.data.eventId.split('-')[0],
+      eventId: event.eventId,
     }
 
     // WHEN
-    const form = new FormData()
-    form.append('data', JSON.stringify(payloadBooking))
+    const { status, data } = await bookingRequest(payloadBooking, API_BASE_URL)
 
-    const { status, data } = await axios.post(`${API_BASE_URL}/item`, form)
-
-    booking.data = data.data
+    booking = data.data
 
     // THEN
     expect(status).toBe(201)
   })
   test('should respond with statusCode 200 to correct request item Booking by Id ', async () => {
     // GIVEN
-
+    console.log({
+      booking,
+      a: `${API_BASE_URL}/item/${booking.bookingId}-${booking.userId}`,
+    })
     const { status, data } = await axios.get(
-      `${API_BASE_URL}/item/${booking.data.bookingId}`,
+      `${API_BASE_URL}/item/${booking.bookingId}-${booking.userId}`,
     )
+
     // WHEN
 
-    const response = data.data
+    const bookingData = data.data
 
     // THEN
     expect(status).toBe(200)
-    expect(response).toEqual(booking.data)
+    expect(bookingData).toEqual(booking)
   })
 })

@@ -7,10 +7,10 @@ const {
   ISO_DATE_REGEX,
 } = require('../../../constants/constants')
 
-const ajv = new Ajv()
+const ajv = new Ajv({ allowUnionTypes: true })
 
 ajv.addFormat('HH:MM', TIME_REGEX)
-ajv.addFormat('DD-MM-YYYY', DATE_REGEX)
+ajv.addFormat('YYYY-MM-DD', DATE_REGEX)
 ajv.addFormat('ISO8601', ISO_DATE_REGEX)
 ajv.addFormat('boolean', {
   validate: (value) => {
@@ -25,6 +25,11 @@ ajv.addFormat('boolean', {
 
     return false
   },
+})
+ajv.addKeyword({
+  keyword: 'isBuffer',
+  validate: (schema, data) => Buffer.isBuffer(data),
+  errors: false,
 })
 
 addFormats(ajv)
@@ -44,7 +49,7 @@ const validateSchema = (data, schema) => {
     const error = new Error()
 
     error.name = 'ValidationException'
-
+    console.log('BBBBBBBBBB', validate.errors)
     error.message = createErrorMsg(validate.errors[0])
 
     throw error
