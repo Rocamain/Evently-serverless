@@ -1,3 +1,4 @@
+'use strict'
 const middy = require('@middy/core')
 const httpJsonBodyParser = require('@middy/http-json-body-parser')
 const httpErrorHandler = require('@middy/http-error-handler')
@@ -15,10 +16,9 @@ const handler = async (event, context) => {
   const queries = queryParser({
     ...event.queryStringParameters,
   })
-
   const response = await myEntityService.queryByGlobalIndex(id, queries)
-
-  if (queries.withBookings === 'true' && id === 'event') {
+  const isEvent = id === 'event' || id === 'event-online'
+  if (isEvent && queries.withBookings === 'true') {
     const eventWithBookings = await Promise.all(
       response.data.map(async ({ eventId }) => {
         const myEntityService = new EntityService()

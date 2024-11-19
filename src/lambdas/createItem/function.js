@@ -9,6 +9,9 @@ const myEntityService = new EntityService()
 
 const createEntity = {
   event: async (data, files) => await myEntityService.createEvent(data, files),
+  'event-online': async (data, files) =>
+    await myEntityService.createEvent(data, files),
+
   booking: async (data) => await myEntityService.createBooking(data),
 }
 
