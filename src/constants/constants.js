@@ -32,6 +32,9 @@ const QUERY_PARAMS = [
   'maxPrice',
   'exclusiveStartKey',
   'withBookings',
+  'latitude',
+  'longitude',
+  'radius',
 ]
 
 const EVENT_CATEGORIES = [
@@ -44,10 +47,17 @@ const EVENT_CATEGORIES = [
   'Religious',
   'Other',
   'Travel',
+  'Online',
 ]
 
 const KEYS_TO_REMOVE = [
+  '$ACTION_REF_4',
+  '$ACTION_REF_3',
   '$ACTION_REF_2',
+  '$ACTION_4:0',
+  '$ACTION_4:1',
+  '$ACTION_3:0',
+  '$ACTION_3:1',
   '$ACTION_2:0',
   '$ACTION_2:1',
   '$ACTION_KEY',
@@ -72,6 +82,24 @@ const ENTITY_EVENT_PROPERTIES = [
   'eventLocationAddress',
   'eventLocationLat',
   'eventLocationLng',
+  'eventDateAndTime',
+  'eventPrice',
+  'eventLink',
+  'eventPictures',
+  'userId',
+]
+
+const ENTITY_EVENT_ONLINE_PROPERTIES = [
+  'id',
+  'createdAt',
+  'type',
+  'eventOwnerId',
+  'eventOwnerName',
+  'eventOwnerEmail',
+  'eventOwnerPicture',
+  'eventTitle',
+  'eventDescription',
+  'eventCategory',
   'eventDateAndTime',
   'eventPrice',
   'eventLink',
@@ -117,6 +145,18 @@ const QUERY_PARAMS_SCHEMA = {
       type: 'string',
       enum: ['true', 'false'],
     },
+    radius: {
+      type: 'string',
+      pattern: '^(?:[0-9]+(?:\\.[0-9]*)?|\\.\\d+)$', // restricts to positive decimal values
+    },
+    latitude: {
+      type: 'string',
+      pattern: '^(?:-?([1-8]?[0-9](?:\\.\\d+)?|90(?:\\.0+)?))$', // -90 to 90
+    },
+    longitude: {
+      type: 'string',
+      pattern: '^(?:-?(1[0-7][0-9]|[1-9]?[0-9])(?:\\.\\d+)?|-180(?:\\.0+)?)$', // -180 to 180
+    },
   },
   additionalProperties: false,
 }
@@ -132,8 +172,8 @@ const EVENT_SCHEMA = {
     eventTitle: { type: 'string' },
     eventDescription: { type: 'string' },
     eventLocationId: { type: 'string' },
-    eventLocationLat: { type: 'string' },
-    eventLocationLng: { type: 'string' },
+    eventLocationLat: { type: 'number', minimum: -90, maximum: 90 },
+    eventLocationLng: { type: 'number', minimum: -180, maximum: 180 },
     eventLocationAddress: { type: 'string' },
     eventCategory: {
       type: 'string',
@@ -172,6 +212,57 @@ const EVENT_SCHEMA = {
     'eventLocationLat',
     'eventLocationLng',
     'eventLocationAddress',
+    'eventCategory',
+    'eventDate',
+    'eventTime',
+    'eventPrice',
+    'eventLink',
+    'eventPictures',
+  ],
+  additionalProperties: false,
+}
+
+const EVENT_ONLINE_SCHEMA = {
+  type: 'object',
+  properties: {
+    type: { type: 'string', enum: ['event', 'booking', 'event-online'] },
+    eventOwnerId: { type: 'string' },
+    eventOwnerName: { type: 'string' },
+    eventOwnerEmail: { type: 'string', format: 'email' },
+    eventOwnerPicture: { type: 'string', format: 'uri' },
+    eventTitle: { type: 'string' },
+    eventDescription: { type: 'string' },
+    eventCategory: {
+      type: 'string',
+      enum: EVENT_CATEGORIES,
+    },
+    eventDate: { type: 'string', pattern: DATE_REGEX.source },
+    eventTime: { type: 'string', pattern: TIME_REGEX.source },
+    eventPrice: { type: 'number', minimum: 0 },
+    eventLink: { type: 'string', format: 'uri' },
+    eventPictures: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          filename: { type: 'string' },
+          mimetype: { type: 'string', enum: ['image/webp'] },
+          encoding: { type: 'string' },
+          truncated: { type: 'boolean' },
+          content: { isBuffer: true },
+        },
+        required: ['filename', 'mimetype', 'encoding', 'truncated'],
+      },
+    },
+  },
+  required: [
+    'type',
+    'eventOwnerId',
+    'eventOwnerName',
+    'eventOwnerEmail',
+    'eventOwnerPicture',
+    'eventTitle',
+    'eventDescription',
     'eventCategory',
     'eventDate',
     'eventTime',
@@ -231,10 +322,12 @@ module.exports = {
   DATE_REGEX,
   ISO_DATE_REGEX,
   ENTITY_EVENT_PROPERTIES,
+  ENTITY_EVENT_ONLINE_PROPERTIES,
   ENTITY_BOOKING_PROPERTIES,
   KEYS_TO_REMOVE,
   QUERY_PARAMS_SCHEMA,
   EVENT_SCHEMA,
+  EVENT_ONLINE_SCHEMA,
   EDIT_EVENT_SCHEMA,
   BOOKING_SCHEMA,
   TYPE_ERROR_SCHEMA,

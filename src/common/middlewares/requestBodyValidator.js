@@ -6,9 +6,15 @@ const bodyValidation = () => {
     sanitizeData(event.body)
     const data = event.body
 
+    console.log({ data })
     // Determine the schema based on the event type or context
-    const id = event.pathParameters?.id && d.includes('event')
+    const id =
+      event.pathParameters?.id && event.pathParameters?.id.includes('event')
     const isEdit = Boolean(id) && event.requestContext.http.method === 'POST'
+    if (event.body.type === 'event') {
+      data.eventLocationLat = Number(data.eventLocationLat)
+      data.eventLocationLng = Number(data.eventLocationLng)
+    }
     let schema
 
     if (isEdit) {

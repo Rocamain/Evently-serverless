@@ -61,7 +61,6 @@ module.exports = class EntityService {
     }
 
     const {
-      eventLocationId,
       eventDateAndTime,
       eventOwnerId,
       eventOwnerName,
@@ -69,24 +68,18 @@ module.exports = class EntityService {
       eventCategory,
     } = eventInfo.data
 
-      booking = {
-        eventDateAndTime,
-        eventOwnerId,
-        eventOwnerName,
-        eventLocation,
-        eventTitle,
-        eventCategory,
-        eventId,
-        ...restRequestBody,
-      }
-
-      return await this.create(booking)
-    } else {
-      const error = new Error()
-      error.message = 'Event does not exist'
-      error.name = 'ValidationException'
-      throw error
+    booking = {
+      eventDateAndTime,
+      eventOwnerId,
+      eventOwnerName,
+      eventLocation,
+      eventTitle,
+      eventCategory,
+      eventId,
+      ...restRequestBody,
     }
+
+    return await this.create(booking)
   }
 
   async create(data) {
@@ -159,7 +152,7 @@ module.exports = class EntityService {
     }
   }
 
-  async queryByGlobalIndex(id, params) {
+  async queryByGlobalIndex(id, queries) {
     console.log(
       `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,
     )
@@ -170,10 +163,6 @@ module.exports = class EntityService {
         indexName: this.indexName,
         field: this.field,
         value: id,
-        ...queries,
-      },
-    )
-
         ...queries,
       },
     )
@@ -195,6 +184,7 @@ module.exports = class EntityService {
       return { data: [] }
     }
   }
+
   async queryByGlobalIndexUserId(id, queries) {
     console.log(
       `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,
@@ -227,6 +217,7 @@ module.exports = class EntityService {
       return { data: [] }
     }
   }
+
   async queryByGlobalIndexOnwerId(id, queries) {
     console.log(
       `Retrieving Entities from repository entityItemService on global index ${process.env.indexName} from table ${process.env.tableName}`,

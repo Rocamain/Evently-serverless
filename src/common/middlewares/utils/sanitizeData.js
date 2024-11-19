@@ -2,7 +2,7 @@ const { KEYS_TO_REMOVE } = require('../../../constants/constants')
 
 const sanitizeData = (data) => {
   // Convert eventPrice to a number if it exists
-  if (data.type === 'event') {
+  if (data.type === 'event' || data.type === 'event-online') {
     if (data.eventPrice) {
       console.log(data.eventPrice)
       data.eventPrice = parseFloat(data.eventPrice)

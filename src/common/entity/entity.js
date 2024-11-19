@@ -4,6 +4,7 @@ const { stingFormatter } = require('../service/utils/stringFormatter')
 const {
   ENTITY_EVENT_PROPERTIES,
   ENTITY_BOOKING_PROPERTIES,
+  ENTITY_EVENT_ONLINE_PROPERTIES,
 } = require('../../constants/constants')
 
 module.exports = class Entity {
@@ -82,6 +83,17 @@ module.exports = class Entity {
         const sanitizeEventItem = {}
 
         ENTITY_EVENT_PROPERTIES.forEach((property) => {
+          property === 'id'
+            ? (sanitizeEventItem.PK = this.id)
+            : (sanitizeEventItem[property] = this[property])
+        })
+
+        return sanitizeEventItem
+      }
+      case 'event-online': {
+        const sanitizeEventItem = {}
+
+        ENTITY_EVENT_ONLINE_PROPERTIES.forEach((property) => {
           property === 'id'
             ? (sanitizeEventItem.PK = this.id)
             : (sanitizeEventItem[property] = this[property])

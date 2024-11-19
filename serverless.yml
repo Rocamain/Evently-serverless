@@ -136,7 +136,6 @@ functions:
         Effect: Allow
         Action:
           - cognito-idp:AdminGetUser
-        Resource: "*"
         Resource: '*'
   savePhoto:
     name: ${self:service}-${self:provider.stage}-save-photo
@@ -187,7 +186,7 @@ functions:
     iamRoleStatements:
       - Effect: "Allow"
         Action:
-          - 'DynamoDB:GetItem'
+          - 'dynamoDB:GetItem'
           - "dynamodb:Query"
         Resource: !GetAtt eventlyTable.Arn
   getItemsByOwner:

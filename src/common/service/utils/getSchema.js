@@ -4,12 +4,16 @@ const {
   BOOKING_SCHEMA,
   TYPE_ERROR_SCHEMA,
   QUERY_PARAMS_SCHEMA,
+  EVENT_ONLINE_SCHEMA,
 } = require('../../../constants/constants')
 
 const getSchema = (type) => {
   switch (type) {
     case 'event': {
       return EVENT_SCHEMA
+    }
+    case 'event-online': {
+      return EVENT_ONLINE_SCHEMA
     }
     case 'editEvent': {
       return EDIT_EVENT_SCHEMA
